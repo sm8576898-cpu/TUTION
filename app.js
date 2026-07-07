@@ -16,6 +16,7 @@ let currentMonth = "";
 const WORKING_DAYS = 26;
 
 const banglaMonths = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+const monthMap = {"জানুয়ারি":"01", "ফেব্রুয়ারি":"02", "মার্চ":"03", "এপ্রিল":"04", "মে":"05", "জুন":"06", "জুলাই":"07", "আগস্ট":"08", "সেপ্টেম্বর":"09", "অক্টোবর":"10", "নভেম্বর":"11", "ডিসেম্বর":"12"};
 
 const firebaseConfig = {
     apiKey: "AIzaSyB8eKU6gZTQ1BMjfmtVwDtbl76f3SsSjmI",
@@ -77,15 +78,12 @@ function togglePasswordVisibility() {
     const passInput = document.getElementById('adminPasswordInput');
     const eyeIcon = document.getElementById('togglePassEye');
     if (!passInput || !eyeIcon) return;
-
     if (passInput.type === 'password') {
         passInput.type = 'text';
         eyeIcon.innerText = '🙈';
-        eyeIcon.title = "পাসওয়ার্ড লুকান";
     } else {
         passInput.type = 'password';
         eyeIcon.innerText = '👁️';
-        eyeIcon.title = "পাসওয়ার্ড দেখুন";
     }
 }
 
@@ -160,7 +158,7 @@ function getMonthData(student, month) {
     if (!student.monthlyData) student.monthlyData = {};
     if (!student.monthlyData[month]) {
         student.monthlyData[month] = {
-            attendedDates: [], // হাজিরার তারিখ সংরক্ষণের নতুন অ্যারে
+            attendedDates: [],
             examMarks: 0,
             feePaid: false,
             feeAmount: 0,
@@ -168,7 +166,6 @@ function getMonthData(student, month) {
             hwDone: false
         };
     }
-    // পুরনো ডেটাবেসের সাথে মেলানোর জন্য কনভার্সন
     if(student.monthlyData[month].attendedDays !== undefined && !student.monthlyData[month].attendedDates) {
         student.monthlyData[month].attendedDates = [];
         delete student.monthlyData[month].attendedDays;
@@ -238,11 +235,13 @@ function switchTab(slideId) {
 function renderAll() {
     renderLeaderboardsAndSummary();
     renderStudentsGrid();
-    renderAttendanceTable();
+    renderPublicAttendanceTable(); // সাধারণ স্ক্রিন
+    renderAdminAttendanceTable();  // অ্যাডমিন প্যানেল
     renderFeesTable();
     renderAdminStudentList();
     renderQuestionHub();
     generateIncomeReport();
+    
     const countSpan = document.getElementById('totalStudentsCount');
     if (countSpan) countSpan.innerText = students.length;
 }
@@ -267,7 +266,7 @@ function renderLeaderboardsAndSummary() {
         sortedByAtt.slice(0, 2).forEach(s => {
             let att = getMonthData(s, currentMonth).attendedDates.length;
             let percentage = ((att / WORKING_DAYS) * 100).toFixed(1);
-            topAttList.innerHTML += `<li><span>${s.name} (${s.class})</span> <span>${percentage}%</span></li>`;
+            topAttList.innerHTML += `<li><span>${s.name} (${s.class})</span> <span>${toBanglaNumber(percentage)}%</span></li>`;
         });
     }
 
@@ -277,9 +276,22 @@ function renderLeaderboardsAndSummary() {
         topExamList.innerHTML = '';
         sortedByExam.slice(0, 2).forEach(s => {
             let marks = getMonthData(s, currentMonth).examMarks;
-            topExamList.innerHTML += `<li><span>${s.name} (${s.class})</span> <span>${marks} নম্বর</span></li>`;
+            topExamList.innerHTML += `<li><span>${s.name} (${s.class})</span> <span>${toBanglaNumber(marks)} নম্বর</span></li>`;
         });
     }
+}
+
+// DD-MM-YYYY ফরম্যাট তৈরি করার ফাংশন
+function getFormattedDatesString(datesArray) {
+    if (!datesArray || datesArray.length === 0) return "কোনো হাজিরা নেই";
+    const mStr = document.getElementById('monthSelect')?.value || "জুলাই";
+    const yStr = document.getElementById('yearSelect')?.value || new Date().getFullYear();
+    const mm = monthMap[mStr] || "01";
+    
+    return datesArray.map(d => {
+        let dd = d < 10 ? '0' + d : d;
+        return `${toBanglaNumber(dd)}-${toBanglaNumber(mm)}-${toBanglaNumber(yStr)}`;
+    }).join('<br>');
 }
 
 function renderStudentsGrid() {
@@ -290,10 +302,7 @@ function renderStudentsGrid() {
         let mData = getMonthData(s, currentMonth);
         let daysArray = mData.attendedDates || [];
         let attCount = daysArray.length;
-        let datesStr = daysArray.length > 0 ? toBanglaNumber(daysArray.join(', ')) : "কোনো হাজিরা নেই";
-
         let percentage = ((attCount / WORKING_DAYS) * 100).toFixed(0);
-        let badge = percentage >= 100 ? "🌟 100% Present" : (mData.examMarks >= 90 ? "🏆 Topper" : "👍 Active");
         let payBadge = getPaymentStatusBadge(mData.feePaid, mData.feeDate);
 
         let backContent = isAdminUnlocked 
@@ -309,9 +318,8 @@ function renderStudentsGrid() {
                         <p style="font-size:0.85rem; color:#475569;">${s.class}</p>
                         <div style="margin-top:4px;">${payBadge}</div>
                         <div class="progress-container">
-                            <div class="progress-label tooltip-container" style="background:transparent; border:none; padding:0;">
-                                <span>উপস্থিতি (${toBanglaNumber(attCount)} দিন)</span> <span>${percentage}%</span>
-                                <div class="tooltip-text" style="bottom:150%;"><strong>হাজিরার তারিখ:</strong><br>${datesStr}</div>
+                            <div class="progress-label" style="background:transparent; border:none; padding:0;">
+                                <span>উপস্থিতি (${toBanglaNumber(attCount)} দিন)</span> <span>${toBanglaNumber(percentage)}%</span>
                             </div>
                             <div class="progress-bar-bg">
                                 <div class="progress-bar-fill" style="width: ${Math.min(percentage, 100)}%"></div>
@@ -328,56 +336,30 @@ function renderStudentsGrid() {
     });
 }
 
-// ৩. নতুন স্মার্ট ডেট-লগ হাজিরা টেবিল
-function renderAttendanceTable() {
-    const container = document.getElementById('attendanceListContainer');
+// সাধারণ ভিউ: শুধুমাত্র পরিষ্কার দিন ও ক্যালেন্ডার আইকন
+function renderPublicAttendanceTable() {
+    const container = document.getElementById('publicAttendanceContainer');
     if(!container) return;
     let html = `<table><tr>
         <th>নাম</th>
-        <th>হাজিরা (তারিখ ও হিসাব)</th>
-        <th>হোমওয়ার্ক</th>
-        <th>অ্যাকশন</th>
+        <th>মোট উপস্থিতি</th>
+        <th>বিস্তারিত (DD-MM-YYYY)</th>
     </tr>`;
 
-    students.forEach((s, idx) => {
+    students.forEach((s) => {
         let mData = getMonthData(s, currentMonth);
         let daysArray = mData.attendedDates || [];
         let attCount = daysArray.length;
-        let datesStrDisplay = daysArray.length > 0 ? daysArray.join(', ') : "";
-        let tooltipStr = daysArray.length > 0 ? toBanglaNumber(daysArray.join(', ')) : "এখনো কোনো হাজিরা নেই";
-
-        let attendanceContent = "";
-
-        // অ্যাডমিন মোড হলে এডিট করার বক্স ও টিক বাটন দেখাবে
-        if (isAdminUnlocked) {
-            attendanceContent = `
-                <div class="att-admin-box">
-                    <input type="text" class="date-input-box" placeholder="যেমন: 1, 5, 12" value="${datesStrDisplay}" onchange="updateAttendanceDates(${idx}, this.value)" title="পুরনো তারিখগুলি কমা (,) দিয়ে লিখুন">
-                    <button onclick="markTodayAttendance(${idx})" class="btn-check" title="আজকের হাজিরা দিন">✔️</button>
-                    <span style="font-weight:900; color:#1e293b;">= ${toBanglaNumber(attCount)} দিন</span>
-                </div>
-            `;
-        } 
-        // সাধারণ ছাত্র-ছাত্রীদের জন্য লকড টুলটিপ ভিউ
-        else {
-            attendanceContent = `
-                <div class="tooltip-container">
-                    <span style="font-size:1rem;">${toBanglaNumber(attCount)} / ২৬ দিন</span>
-                    <div class="tooltip-text"><strong>উপস্থিতির তারিখগুলি:</strong><br>${tooltipStr}</div>
-                </div>
-            `;
-        }
+        let formattedDates = getFormattedDatesString(daysArray);
 
         html += `<tr>
             <td><strong>${s.name}</strong></td>
-            <td>${attendanceContent}</td>
+            <td><strong style="color:var(--primary-dark); font-size:1.1rem;">${toBanglaNumber(attCount)}</strong> / ২৬ দিন</td>
             <td>
-                <input type="checkbox" ${mData.hwDone ? 'checked' : ''} onchange="toggleHW(${idx})" style="width:18px; height:18px;" ${!isAdminUnlocked ? 'disabled' : ''}> ${mData.hwDone ? 'হয়েছে ✔️' : 'বাকি'}
-            </td>
-            <td>
-                ${!mData.hwDone 
-                    ? `<a href="https://wa.me/91${s.phone}?text=${encodeURIComponent('নমস্কার, আজকের হোমওয়ার্ক সম্পূর্ণ করা হয়নি। অনুগ্রহ করে নজর দিন।')}" target="_blank" class="btn-wa">সতর্কবার্তা 💬</a>` 
-                    : '✔️'}
+                <div class="tooltip-container">
+                    <span class="calendar-icon">📅</span>
+                    <div class="tooltip-text"><strong>উপস্থিতির তারিখগুলি:</strong><br>${formattedDates}</div>
+                </div>
             </td>
         </tr>`;
     });
@@ -385,26 +367,55 @@ function renderAttendanceTable() {
     container.innerHTML = html;
 }
 
-// অ্যাডমিনের টাইপ করা কমা-দেওয়া তারিখ আপডেট করার লজিক
+// অ্যাডমিন ভিউ: টাইপ করা ও মার্ক করার ব্যবস্থা (শুধুমাত্র অ্যাডমিন প্যানেলে)
+function renderAdminAttendanceTable() {
+    const container = document.getElementById('adminAttendanceContainer');
+    if(!container) return;
+    let html = `<table><tr>
+        <th>নাম</th>
+        <th>হাজিরা আপডেট করুন (কমা দিয়ে তারিখ)</th>
+        <th>হোমওয়ার্ক</th>
+    </tr>`;
+
+    students.forEach((s, idx) => {
+        let mData = getMonthData(s, currentMonth);
+        let daysArray = mData.attendedDates || [];
+        let datesStrDisplay = daysArray.length > 0 ? daysArray.join(', ') : "";
+
+        html += `<tr>
+            <td><strong>${s.name}</strong></td>
+            <td>
+                <div class="att-admin-box">
+                    <input type="text" class="date-input-box" placeholder="যেমন: 1, 5, 12" value="${datesStrDisplay}" onchange="updateAttendanceDates(${idx}, this.value)" title="পুরনো তারিখগুলি কমা (,) দিয়ে লিখুন">
+                    <button onclick="markTodayAttendance(${idx})" class="btn-check" title="আজকের হাজিরা দিন">✔️</button>
+                    <span style="font-weight:900; color:#1e293b;">= ${toBanglaNumber(daysArray.length)} দিন</span>
+                </div>
+            </td>
+            <td>
+                <input type="checkbox" ${mData.hwDone ? 'checked' : ''} onchange="toggleHW(${idx})" style="width:18px; height:18px;"> ${mData.hwDone ? 'হয়েছে ✔️' : 'বাকি'}
+            </td>
+        </tr>`;
+    });
+    html += `</table>`;
+    container.innerHTML = html;
+}
+
 function updateAttendanceDates(index, val) {
     let mData = getMonthData(students[index], currentMonth);
     if (!val.trim()) {
         mData.attendedDates = [];
     } else {
-        // স্ট্রিং ভেঙে শুধু সঠিক সংখ্যা (১-৩১) ফিল্টার ও সর্ট করা
         let rawArr = val.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d) && d > 0 && d <= 31);
         mData.attendedDates = [...new Set(rawArr)].sort((a, b) => a - b);
     }
     saveData();
 }
 
-// এক ক্লিকে আজকের তারিখ জমা করার লজিক
 function markTodayAttendance(index) {
     let mData = getMonthData(students[index], currentMonth);
-    let today = new Date().getDate(); // আজকের তারিখ (1-31)
+    let today = new Date().getDate();
     
     if (!mData.attendedDates) mData.attendedDates = [];
-    
     if (mData.attendedDates.includes(today)) {
         alert(`❌ আজকের তারিখ (${toBanglaNumber(today)}) আগেই জমা করা আছে!`);
         return;
@@ -416,10 +427,6 @@ function markTodayAttendance(index) {
 }
 
 function toggleHW(index) {
-    if(!isAdminUnlocked) {
-        alert("🔒 হোমওয়ার্ক আপডেট করতে অ্যাডমিনে লগইন করুন!");
-        return;
-    }
     let mData = getMonthData(students[index], currentMonth);
     mData.hwDone = !mData.hwDone;
     saveData();
@@ -561,7 +568,7 @@ function renderQuestionHub() {
         } else {
             homeList.innerHTML = questionPapers.map(q => `
                 <a href="${q.url}" download="${q.fileName}" class="q-link-item" style="display:block; margin:6px 0; background:#f1f5f9; padding:10px; border-radius:8px;">
-                    📄 <strong>[${q.className}]</strong> ${q.fileName} <span style="font-size:0.75rem; color:#64748b;">(${q.sizeKB} KB) ⬇️ ডাউনলোড</span>
+                    📄 <strong>[${q.className}]</strong> ${q.fileName} <span style="font-size:0.75rem; color:#64748b;">(${toBanglaNumber(q.sizeKB)} KB) ⬇️ ডাউনলোড</span>
                 </a>
             `).join('');
         }
@@ -576,7 +583,7 @@ function renderQuestionHub() {
                 html += `<tr>
                     <td><strong>${q.className}</strong></td>
                     <td><a href="${q.url}" download="${q.fileName}">${q.fileName}</a></td>
-                    <td>${q.sizeKB} KB</td>
+                    <td>${toBanglaNumber(q.sizeKB)} KB</td>
                     <td><button onclick="deleteQuestionPaper(${q.id})" class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;">ডিলিট 🗑️</button></td>
                 </tr>`;
             });
@@ -596,7 +603,7 @@ function searchStudent() {
     filtered.forEach(s => {
         let mData = getMonthData(s, currentMonth);
         resultsDiv.innerHTML += `<div class="search-item" onclick="switchTab('slide-students')">
-            <strong>${s.name}</strong> (${s.class}) - উপস্থিতি: ${mData.attendedDates.length} দিন
+            <strong>${s.name}</strong> (${s.class}) - উপস্থিতি: ${toBanglaNumber(mData.attendedDates.length)} দিন
         </div>`;
     });
 }
@@ -746,7 +753,7 @@ function generateIncomeReport() {
     });
 
     html += `<tr style="background: #dcfce7; font-size: 1.05rem;">
-        <td colspan="4" style="text-align: right;"><strong>মোট মাসিক আয় (Total Income):</strong></td>
+        <td colspan="4" style="text-align: right;"><strong>মোট মাসিক আয়:</strong></td>
         <td><strong style="color: #166534;">৳ ${totalIncome.toLocaleString('en-IN')}</strong></td>
     </tr>`;
     html += `</table>`;

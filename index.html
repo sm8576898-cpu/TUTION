@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <!-- হেডার: RGB অ্যানিমেটেড গ্লো থিম -->
+    <!-- হেডার -->
     <header class="app-header rgb-glow">
         <div class="branding">
             <h1 id="instituteNameDisplay" class="rgb-text">SM Coaching Institute</h1>
@@ -19,12 +19,10 @@
             <div id="publicMonthDisplay" class="month-badge">
                 📅 মাস: <strong id="displayHeaderMonth">জুলাই ২০২৬</strong>
             </div>
-
             <div id="adminDateSelector" class="date-selector hidden">
                 <select id="monthSelect" onchange="changeMonthYear()" class="month-dropdown"></select>
                 <input type="number" id="yearSelect" oninput="changeMonthYear()" class="year-input" placeholder="সাল (যেমন: 2026)">
             </div>
-
             <div class="view-counter rgb-border">
                 <span>👁️ ভিউজ: <strong id="liveViews">1</strong></span>
             </div>
@@ -33,7 +31,7 @@
 
     <main class="content-container">
 
-        <!-- SLIDE 1: হোম / ড্যাশবোর্ড -->
+        <!-- SLIDE 1: হোম -->
         <section id="slide-home" class="slide active">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="🔍 ছাত্র/ছাত্রীর নাম খুঁজুন..." onkeyup="searchStudent()" class="rgb-input">
@@ -46,7 +44,7 @@
                     <strong id="displayCurrentMonth">জুলাই ২০২৬</strong>
                 </div>
                 <div class="summary-item total-fee">
-                    <span>এই মাসে মোট ফিস আদায় (Auto-Sum):</span>
+                    <span>এই মাসে মোট ফিস আদায়:</span>
                     <strong>৳ <span id="totalFeeCollected">0</span></strong>
                 </div>
             </div>
@@ -64,80 +62,76 @@
 
             <div class="question-hub rgb-card">
                 <h3>📚 কোশ্চেন পেপার ও স্টাডি হাব (PDF ডাউনলোড)</h3>
-                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 12px;">
-                    শিক্ষকের আপলোড করা বিভিন্ন ক্লাসের প্রশ্নপত্র ও নোটস নিচের লিংক থেকে ক্লিক করে দেখুন বা ডাউনলোড করুন:
-                </p>
                 <div id="questionList" class="q-links"></div>
             </div>
         </section>
 
-        <!-- SLIDE 2: ছাত্র-ছাত্রীর তালিকা -->
+        <!-- SLIDE 2: ছাত্র তালিকা -->
         <section id="slide-students" class="slide">
             <h2>👥 ছাত্র-ছাত্রীদের তালিকা (মোট: <span id="totalStudentsCount">৯</span> জন)</h2>
-            <p class="privacy-note">🔒 ফোন নম্বর ও ঠিকানা দেখতে অ্যাডমিন প্যানেলে লগইন করুন। কার্ডে ক্লিক করে উল্টান!</p>
+            <p class="privacy-note">🔒 ফোন নম্বর ও ঠিকানা দেখতে অ্যাডমিন প্যানেলে লগইন করুন।</p>
             <div id="studentsGrid" class="students-grid"></div>
         </section>
 
-        <!-- SLIDE 3: দৈনিক হাজিরা ও হোমওয়ার্ক (Tooltips + Backlog Entry) -->
+        <!-- SLIDE 3: দৈনিক হাজিরা (Clean Public View with Icon) -->
         <section id="slide-attendance" class="slide">
-            <h2>📅 স্মার্ট হাজিরা ও হোমওয়ার্ক খাতা (<span class="current-month-text">জুলাই ২০২৬</span>)</h2>
+            <h2>📅 স্মার্ট হাজিরা খাতা (<span class="current-month-text">জুলাই ২০২৬</span>)</h2>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">
-                💡 <strong>অ্যাডমিন:</strong> কমা (,) দিয়ে পুরনো হাজিরার তারিখ বসান অথবা আজকের জন্য <strong>✔️</strong> ট্যাপ করুন!<br>
-                💡 <strong>ছাত্র-ছাত্রী:</strong> হাজিরার উপর মাউস রাখলে বা চাপ দিলে কোন দিন এসেছেন তা ভাসমান বক্সে দেখতে পাবেন।
+                💡 <strong>নির্দেশনা:</strong> ডানদিকের 📅 আইকনের ওপর মাউস রাখলে বা ক্লিক করলে উপস্থিতির বিস্তারিত তারিখ দেখা যাবে।
             </p>
             <div class="attendance-header">
-                <p>মাসের কাজের দিন (রবিবার বাদে স্বয়ংক্রিয়): <strong id="workingDaysCount">২৬</strong> দিন</p>
+                <p>মাসের কাজের দিন (রবিবার বাদে): <strong id="workingDaysCount">২৬</strong> দিন</p>
             </div>
-            <div id="attendanceListContainer" class="table-responsive rgb-card"></div>
+            <div id="publicAttendanceContainer" class="table-responsive rgb-card"></div>
         </section>
 
-        <!-- SLIDE 4: ফিস এবং পরীক্ষার নম্বর -->
+        <!-- SLIDE 4: ফিস এবং নম্বর -->
         <section id="slide-fees" class="slide">
             <h2>💰 ফিস, তারিখ এবং পরীক্ষার নম্বর (<span class="current-month-text">জুলাই ২০২৬</span>)</h2>
-            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">
-                💡 নিয়ম: ৭ তারিখ বা তার আগে দিলে <strong>Early Payer 🌟</strong>, এবং ১৩ তারিখ বা তার পরে দিলে <strong>Late Fee ⚠️</strong> দেখাবে।
-            </p>
             <div id="feesListContainer" class="table-responsive rgb-card"></div>
         </section>
 
-        <!-- SLIDE 5: অ্যাডমিন প্যানেল ও রিপোর্ট -->
+        <!-- SLIDE 5: অ্যাডমিন প্যানেল -->
         <section id="slide-admin" class="slide">
-            <h2>⚙️ অ্যাডমিন সিকিউরিটি ও রিপোর্ট</h2>
+            <h2>⚙️ অ্যাডমিন সিকিউরিটি ও ড্যাশবোর্ড</h2>
             
             <div id="loginBox" class="card rgb-card">
                 <h3 class="rgb-text">🔒 অ্যাডমিন ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন</h3>
                 <input type="email" id="adminEmailInput" placeholder="অ্যাডমিন ইমেইল লিখুন" class="rgb-input" style="margin-top: 10px;">
                 <div style="position: relative; margin-top: 6px;">
                     <input type="password" id="adminPasswordInput" placeholder="পাসওয়ার্ড লিখুন" class="rgb-input" style="width: 100%; padding-right: 42px; margin: 0;">
-                    <span onclick="togglePasswordVisibility()" id="togglePassEye" title="পাসওয়ার্ড দেখুন" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem; user-select: none;">👁️</span>
+                    <span onclick="togglePasswordVisibility()" id="togglePassEye" title="পাসওয়ার্ড দেখুন" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem;">👁️</span>
                 </div>
                 <button onclick="unlockAdmin()" class="btn btn-success rgb-btn" style="margin-top: 14px; width: 100%;">লগইন করুন</button>
             </div>
 
             <div id="adminControls" class="admin-panel hidden">
-                <div class="admin-badge rgb-border">🔓 অ্যাডমিন আনলকড (তথ্য এডিট, ডিলিট ও মাস কন্ট্রোল দৃশ্যমান)</div>
+                <div class="admin-badge rgb-border">🔓 অ্যাডমিন আনলকড (সম্পূর্ণ কন্ট্রোল দৃশ্যমান)</div>
                 <button onclick="lockAdmin()" class="btn btn-danger">লগআউট (লক করুন)</button>
 
                 <div class="card rgb-card" style="margin-top: 15px;">
                     <h3 class="rgb-text">📅 ড্যাশবোর্ডের মাস ও সাল নির্বাচন</h3>
-                    <p style="font-size: 0.85rem; color: #475569; margin-bottom: 10px;">
-                        মাস সিলেক্ট করুন এবং নিজের ইচ্ছামতো যেকোনো সাল টাইপ করুন (যেমন: 2026):
-                    </p>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
                         <select id="adminPanelMonthSelect" onchange="syncAdminPanelDate()" class="month-dropdown" style="border: 1px solid #cbd5e1;"></select>
-                        <input type="number" id="adminPanelYearSelect" oninput="syncAdminPanelDate()" class="year-input" style="border: 1px solid #cbd5e1; width: 130px;" placeholder="সাল (যেমন: 2026)">
+                        <input type="number" id="adminPanelYearSelect" oninput="syncAdminPanelDate()" class="year-input" style="border: 1px solid #cbd5e1; width: 130px;" placeholder="সাল">
                     </div>
                 </div>
 
-                <div class="card rgb-card" style="margin-top: 15px; border: 2px solid #6366f1;">
-                    <h3 class="rgb-text">📚 কোশ্চেন পেপার আপলোড (শুধুমাত্র PDF: 20 KB - 60 KB)</h3>
+                <!-- নতুন: অ্যাডমিন হাজিরা ও হোমওয়ার্ক ম্যানেজমেন্ট ড্যাশবোর্ড -->
+                <div class="card rgb-card" style="margin-top: 15px; border: 2px solid #16a34a;">
+                    <h3 class="rgb-text">📅 অ্যাডমিন হাজিরা ও হোমওয়ার্ক ম্যানেজমেন্ট</h3>
                     <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">
-                        যেকোনো ক্লাসের নাম বা বিষয় লিখে শুধুমাত্র ২০ কেবি থেকে ৬০ কেবি সাইজের PDF ফাইল আপলোড করুন:
+                        এখান থেকে ছাত্র-ছাত্রীদের হাজিরা (তারিখ টাইপ করে বা টিক দিয়ে) এবং হোমওয়ার্ক আপডেট করুন:
                     </p>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                        <input type="text" id="qClassInput" placeholder="ক্লাসের নাম (যেমন: CLASS-IV, C-X)" class="rgb-input" style="width: 220px; padding: 8px;">
+                    <div id="adminAttendanceContainer" class="table-responsive"></div>
+                </div>
+
+                <div class="card rgb-card" style="margin-top: 15px;">
+                    <h3 class="rgb-text">📚 কোশ্চেন পেপার আপলোড (PDF: 20-60 KB)</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top:10px;">
+                        <input type="text" id="qClassInput" placeholder="ক্লাসের নাম" class="rgb-input" style="width: 200px; padding: 8px;">
                         <input type="file" id="qFileInput" accept=".pdf" style="border: 1px solid #cbd5e1; padding: 6px; border-radius: 6px; background: white;">
-                        <button onclick="uploadQuestionPaper()" class="btn btn-primary rgb-btn">আপলোড করুন 📤</button>
+                        <button onclick="uploadQuestionPaper()" class="btn btn-primary rgb-btn">আপলোড 📤</button>
                     </div>
                     <div id="adminQuestionList" class="table-responsive" style="margin-top: 15px;"></div>
                 </div>
@@ -167,10 +161,10 @@
 
                 <div class="card rgb-card" style="margin-top: 15px;">
                     <h3 class="rgb-text">💰 মাসিক ইনকাম ও রিসিট ফিল্টার রিপোর্ট</h3>
-                    <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
                         <select id="reportMonthSelect" onchange="generateIncomeReport()" class="month-dropdown" style="border: 1px solid #cbd5e1;"></select>
                         <input type="number" id="reportYearSelect" oninput="generateIncomeReport()" class="year-input" style="border: 1px solid #cbd5e1; width: 110px;" placeholder="সাল">
-                        <button onclick="window.print()" class="btn btn-warning rgb-btn" style="background: #059669;">রিপোর্ট PDF প্রিন্ট করুন 📄</button>
+                        <button onclick="window.print()" class="btn btn-warning rgb-btn" style="background: #059669;">PDF প্রিন্ট করুন 📄</button>
                     </div>
                     <div id="incomeReportContainer" class="table-responsive"></div>
                 </div>
