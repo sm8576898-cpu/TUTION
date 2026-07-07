@@ -1,7 +1,7 @@
 let students = [
     { id: 1, name: "ASMI RONG", class: "C-X", phone: "9876543210", address: "হাওড়া", monthlyData: {} },
     { id: 2, name: "PRITI RONG", class: "C-X", phone: "9876543211", address: "শিবপুর", monthlyData: {} },
-    { id: 3, name: "RITTIKA PATRA", class: "CLASS-IV", phone: "9876543212", address: "কাদাম تলা", monthlyData: {} },
+    { id: 3, name: "RITTIKA PATRA", class: "CLASS-IV", phone: "9876543212", address: "কাদাম তলা", monthlyData: {} },
     { id: 4, name: "SIJA MAKAL", class: "C-V", phone: "9876543213", address: "সাঁতরাগাছি", monthlyData: {} },
     { id: 5, name: "POULOMI BAG", class: "C-V", phone: "9876543214", address: "বালিহাটি", monthlyData: {} },
     { id: 6, name: "RUMI POLLEY", class: "S-II", phone: "9876543215", address: "বেলুড়", monthlyData: {} },
@@ -142,7 +142,6 @@ function changeMonthYear() {
     renderAll();
 }
 
-// সিঙ্ক
 function syncAdminPanelDate() {
     if(document.getElementById('monthSelect')) document.getElementById('monthSelect').value = document.getElementById('adminPanelMonthSelect').value;
     if(document.getElementById('yearSelect')) document.getElementById('yearSelect').value = document.getElementById('adminPanelYearSelect').value;
@@ -232,10 +231,15 @@ function renderAll() {
     renderStudentsGrid();
     renderPublicAttendanceTable();
     renderAdminAttendanceTable();
-    renderFeesTable();
+    
+    // নতুন: ফিস টেবিল রেন্ডারিং
+    renderPublicFeesTable();
+    renderAdminFeesTable();
+    
     renderAdminStudentList();
     renderQuestionHub();
     generateIncomeReport();
+    
     const countSpan = document.getElementById('totalStudentsCount');
     if (countSpan) countSpan.innerText = students.length;
 }
@@ -399,35 +403,113 @@ function toggleHW(index) {
     saveData();
 }
 
-function renderFeesTable() {
-    const container = document.getElementById('feesListContainer');
+// নতুন: পাবলিক ফিস টেবিল (ক্লিন ভিউ)
+function renderPublicFeesTable() {
+    const container = document.getElementById('publicFeesContainer');
     if(!container) return;
-    let html = `<table><tr><th>নাম</th><th>স্ট্যাটাস</th><th>পেমেন্ট তারিখ</th><th>স্ট্যাটাস ট্যাগ</th><th>টাকার পরিমাণ (৳)</th><th>নম্বর</th><th>রিসিট</th></tr>`;
-    students.forEach((s, idx) => {
+    let html = `<table><tr>
+        <th>নাম</th>
+        <th>স্ট্যাটাস ট্যাগ</th>
+        <th>টাকার পরিমাণ (৳)</th>
+        <th>পরীক্ষার নম্বর</th>
+    </tr>`;
+
+    students.forEach((s) => {
         let mData = getMonthData(s, currentMonth);
+        let statusBadge = getPaymentStatusBadge(mData.feePaid, mData.feeDate);
+        let amountStr = mData.feePaid ? `৳ ${toBanglaNumber(mData.feeAmount)}` : `<span style="color:#dc2626;">বকেয়া</span>`;
+        let marksStr = mData.examMarks ? `${toBanglaNumber(mData.examMarks)}` : "-";
+
         html += `<tr>
             <td><strong>${s.name}</strong></td>
-            <td><button onclick="toggleFee(${idx})" class="btn ${mData.feePaid ? 'btn-success' : 'btn-danger'}" style="padding:6px 10px;" ${!isAdminUnlocked ? 'disabled' : ''}>${mData.feePaid ? 'পেইড ✔️' : 'বকেয়া'}</button></td>
-            <td><input type="date" value="${mData.feeDate || ''}" onchange="updateFeeDate(${idx}, this.value)" ${!isAdminUnlocked ? 'disabled' : ''}></td>
-            <td>${getPaymentStatusBadge(mData.feePaid, mData.feeDate)}</td>
-            <td><input type="number" value="${mData.feeAmount}" style="width:75px;" onchange="updateFeeAmount(${idx}, this.value)" ${!isAdminUnlocked ? 'disabled' : ''}></td>
-            <td><input type="number" value="${mData.examMarks}" style="width:55px;" onchange="updateMarks(${idx}, this.value)" ${!isAdminUnlocked ? 'disabled' : ''}></td>
-            <td>
-                ${!mData.feePaid 
-                    ? `<a href="https://wa.me/91${s.phone}?text=${encodeURIComponent('নমস্কার, ' + currentMonth + ' মাসের ফিস বকেয়া রয়েছে।')}" target="_blank" class="btn-wa">রিমাইন্ডার 💬</a>` 
-                    : `<button onclick="alert('৳${mData.feeAmount} জমা নেওয়া হয়েছে।')" class="btn btn-primary" style="font-size:0.75rem;">রিসিট 📄</button>`}
-            </td>
+            <td>${statusBadge}</td>
+            <td><strong>${amountStr}</strong></td>
+            <td><strong>${marksStr}</strong></td>
         </tr>`;
     });
     html += `</table>`;
     container.innerHTML = html;
 }
 
-function toggleFee(index) { if(!isAdminUnlocked) return; let mData = getMonthData(students[index], currentMonth); mData.feePaid = !mData.feePaid; if (mData.feePaid && !mData.feeDate) { mData.feeDate = new Date().toISOString().split('T')[0]; } saveData(); }
-function updateFeeDate(index, val) { if(!isAdminUnlocked) return; let mData = getMonthData(students[index], currentMonth); mData.feeDate = val; if(val) mData.feePaid = true; saveData(); }
-// পরিমাণ
-function updateFeeAmount(index, val) { if(!isAdminUnlocked) return; getMonthData(students[index], currentMonth).feeAmount = parseInt(val) || 0; saveData(); }
-function updateMarks(index, val) { if(!isAdminUnlocked) return; getMonthData(students[index], currentMonth).examMarks = parseInt(val) || 0; saveData(); }
+// নতুন: অ্যাডমিন ফিস টেবিল (এডিটেবল ও অটো-সাম সহ)
+function renderAdminFeesTable() {
+    const container = document.getElementById('adminFeesContainer');
+    if(!container) return;
+    
+    let totalCollected = 0; // অ্যাডমিন অটো-সাম ভেরিয়েবল
+
+    let html = `<table><tr>
+        <th>নাম</th>
+        <th>পেমেন্ট স্ট্যাটাস</th>
+        <th>পেমেন্ট তারিখ</th>
+        <th>টাকার পরিমাণ (৳)</th>
+        <th>নম্বর</th>
+        <th>রিসিট/রিমাইন্ডার</th>
+    </tr>`;
+
+    students.forEach((s, idx) => {
+        let mData = getMonthData(s, currentMonth);
+        
+        // অটো-সাম ক্যালকুলেশন
+        if(mData.feePaid) {
+            totalCollected += parseInt(mData.feeAmount) || 0;
+        }
+
+        html += `<tr>
+            <td><strong>${s.name}</strong></td>
+            <td>
+                <button onclick="toggleFee(${idx})" class="btn ${mData.feePaid ? 'btn-success' : 'btn-danger'}" style="padding:6px 10px; font-size:0.8rem;">
+                    ${mData.feePaid ? 'পেইড ✔️' : 'বকেয়া'}
+                </button>
+            </td>
+            <td>
+                <input type="date" value="${mData.feeDate || ''}" onchange="updateFeeDate(${idx}, this.value)" class="date-input-box" style="width:130px; padding:4px;">
+            </td>
+            <td>
+                <input type="number" placeholder="৳" value="${mData.feeAmount}" onchange="updateFeeAmount(${idx}, this.value)" class="date-input-box" style="width:80px; padding:4px;">
+            </td>
+            <td>
+                <input type="number" value="${mData.examMarks}" onchange="updateMarks(${idx}, this.value)" class="date-input-box" style="width:60px; padding:4px;">
+            </td>
+            <td>
+                ${!mData.feePaid 
+                    ? `<a href="https://wa.me/91${s.phone}?text=${encodeURIComponent('নমস্কার, ' + currentMonth + ' মাসের ফিস বকেয়া রয়েছে।')}" target="_blank" class="btn-wa">রিমাইন্ডার 💬</a>` 
+                    : `<button onclick="alert('৳${toBanglaNumber(mData.feeAmount)} জমা নেওয়া হয়েছে।')" class="btn btn-primary" style="font-size:0.75rem;">রিসিট 📄</button>`}
+            </td>
+        </tr>`;
+    });
+    html += `</table>`;
+    container.innerHTML = html;
+
+    // অটো-সাম ডিসপ্লে আপডেট করা
+    const sumEl = document.getElementById('adminTotalFeesCollected');
+    if(sumEl) sumEl.innerText = `৳ ${totalCollected.toLocaleString('en-IN')}`;
+}
+
+function toggleFee(index) { 
+    if(!isAdminUnlocked) return; 
+    let mData = getMonthData(students[index], currentMonth); 
+    mData.feePaid = !mData.feePaid; 
+    if (mData.feePaid && !mData.feeDate) { mData.feeDate = new Date().toISOString().split('T')[0]; } 
+    saveData(); 
+}
+function updateFeeDate(index, val) { 
+    if(!isAdminUnlocked) return; 
+    let mData = getMonthData(students[index], currentMonth); 
+    mData.feeDate = val; 
+    if(val) mData.feePaid = true; 
+    saveData(); 
+}
+function updateFeeAmount(index, val) { 
+    if(!isAdminUnlocked) return; 
+    getMonthData(students[index], currentMonth).feeAmount = parseInt(val) || 0; 
+    saveData(); 
+}
+function updateMarks(index, val) { 
+    if(!isAdminUnlocked) return; 
+    getMonthData(students[index], currentMonth).examMarks = parseInt(val) || 0; 
+    saveData(); 
+}
 
 function uploadQuestionPaper() {
     const classInput = document.getElementById('qClassInput'); const fileInput = document.getElementById('qFileInput'); const qClass = classInput?.value.trim() || "General Note";
@@ -478,6 +560,6 @@ function generateIncomeReport() {
     const container = document.getElementById('incomeReportContainer'); if (!container) return;
     const m = document.getElementById('reportMonthSelect')?.value; let y = document.getElementById('reportYearSelect')?.value || new Date().getFullYear(); if(!m) return;
     const fStr = `${m} ${toBanglaNumber(y)}`; let total = 0;
-    let html = `<table>` + students.map(s => { let amount = s.monthlyData[fStr]?.feePaid ? (parseInt(s.monthlyData[fStr].feeAmount) || 0) : 0; total += amount; return `<tr><td><strong>${s.name}</strong></td><td>${s.class}</td><td>৳ ${toBanglaNumber(amount)}</td></tr>`; }).join('') + `<tr><td colspan="2"><strong>মোট মাসিক আয়:</strong></td><td><strong>৳ ${toBanglaNumber(total)}</strong></td></tr></table>`;
+    let html = `<table>` + students.map(s => { let amount = s.monthlyData[fStr]?.feePaid ? (parseInt(s.monthlyData[fStr].feeAmount) || 0) : 0; total += amount; return `<tr><td><strong>${s.name}</strong></td><td>${s.class}</td><td>৳ ${amount.toLocaleString('en-IN')}</td></tr>`; }).join('') + `<tr><td colspan="2"><strong>মোট মাসিক আয়:</strong></td><td><strong style="color: green;">৳ ${total.toLocaleString('en-IN')}</strong></td></tr></table>`;
     container.innerHTML = html;
 }
