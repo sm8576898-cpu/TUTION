@@ -12,7 +12,7 @@
     <!-- হেডার -->
     <header class="app-header rgb-glow">
         <div class="branding">
-            <h1 id="instituteNameDisplay" class="rgb-text">SM Coaching Institute</h1>
+            <h1 id="instituteNameDisplay" class="rgb-text">জ্ঞানকুঠির</h1>
             <p>শিক্ষক: <span id="teacherNameDisplay">Sayan Sir</span></p>
         </div>
         <div class="header-right">
@@ -31,7 +31,7 @@
 
     <main class="content-container">
 
-        <!-- SLIDE 1: হোম -->
+        <!-- SLIDE 1: হোম ড্যাশবোর্ড -->
         <section id="slide-home" class="slide active">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="🔍 ছাত্র/ছাত্রীর নাম খুঁজুন..." onkeyup="searchStudent()" class="rgb-input">
@@ -66,34 +66,22 @@
             </div>
         </section>
 
-        <!-- SLIDE 2: ছাত্র তালিকা -->
+        <!-- SLIDE 2: ছাত্র তালিকা (Public View) -->
         <section id="slide-students" class="slide">
             <h2>👥 ছাত্র-ছাত্রীদের তালিকা (মোট: <span id="totalStudentsCount">৯</span> জন)</h2>
             <p class="privacy-note">🔒 ফোন নম্বর ও ঠিকানা দেখতে অ্যাডমিন প্যানেলে লগইন করুন।</p>
             <div id="studentsGrid" class="students-grid"></div>
         </section>
 
-        <!-- SLIDE 3: দৈনিক হাজিরা (Clean Public View with Icon) -->
-        <section id="slide-attendance" class="slide">
-            <h2>📅 স্মার্ট হাজিরা খাতা (<span class="current-month-text">জুলাই ২০২৬</span>)</h2>
-            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">
-                💡 <strong>নির্দেশনা:</strong> ডানদিকের 📅 আইকনের ওপর মাউস রাখলে বা ক্লিক করলে উপস্থিতির বিস্তারিত তারিখ দেখা যাবে।
-            </p>
-            <div class="attendance-header">
-                <p>মাসের কাজের দিন (রবিবার বাদে): <strong id="workingDaysCount">২৬</strong> দিন</p>
-            </div>
-            <div id="publicAttendanceContainer" class="table-responsive rgb-card"></div>
-        </section>
-
-        <!-- SLIDE 4: ফিস এবং নম্বর -->
+        <!-- SLIDE 3: ফিস এবং নম্বর -->
         <section id="slide-fees" class="slide">
             <h2>💰 ফিস, তারিখ এবং পরীক্ষার নম্বর (<span class="current-month-text">জুলাই ২০২৬</span>)</h2>
             <div id="feesListContainer" class="table-responsive rgb-card"></div>
         </section>
 
-        <!-- SLIDE 5: অ্যাডমিন প্যানেল -->
+        <!-- SLIDE 4: অ্যাডমিন ড্যাশবোর্ড (হাজিরা ভিউ সহ) -->
         <section id="slide-admin" class="slide">
-            <h2>⚙️ অ্যাডমিন সিকিউরিটি ও ড্যাশবোর্ড</h2>
+            <h2>⚙️ অ্যাডমিন সিকিউরিটি ও মহাদ্যাশবোর্ড</h2>
             
             <div id="loginBox" class="card rgb-card">
                 <h3 class="rgb-text">🔒 অ্যাডমিন ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন</h3>
@@ -105,66 +93,82 @@
                 <button onclick="unlockAdmin()" class="btn btn-success rgb-btn" style="margin-top: 14px; width: 100%;">লগইন করুন</button>
             </div>
 
+            <!-- অ্যাডমিন আনলকড এরিয়া -->
             <div id="adminControls" class="admin-panel hidden">
                 <div class="admin-badge rgb-border">🔓 অ্যাডমিন আনলকড (সম্পূর্ণ কন্ট্রোল দৃশ্যমান)</div>
-                <button onclick="lockAdmin()" class="btn btn-danger">লগআউট (লক করুন)</button>
+                <button onclick="lockAdmin()" class="btn btn-danger" style="margin-bottom: 20px;">লগআউট (লক করুন)</button>
 
-                <div class="card rgb-card" style="margin-top: 15px;">
+                <!-- মাস নির্বাচন বক্স -->
+                <div class="card rgb-card section-large">
                     <h3 class="rgb-text">📅 ড্যাশবোর্ডের মাস ও সাল নির্বাচন</h3>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-                        <select id="adminPanelMonthSelect" onchange="syncAdminPanelDate()" class="month-dropdown" style="border: 1px solid #cbd5e1;"></select>
-                        <input type="number" id="adminPanelYearSelect" oninput="syncAdminPanelDate()" class="year-input" style="border: 1px solid #cbd5e1; width: 130px;" placeholder="সাল">
+                        <select id="adminPanelMonthSelect" onchange="syncAdminPanelDate()" class="month-dropdown" style="border: 1px solid #cbd5e1; font-size:1.1rem; padding: 10px;"></select>
+                        <input type="number" id="adminPanelYearSelect" oninput="syncAdminPanelDate()" class="year-input" style="border: 1px solid #cbd5e1; width: 150px; font-size:1.1rem; padding: 10px;" placeholder="সাল">
                     </div>
                 </div>
 
-                <!-- নতুন: অ্যাডমিন হাজিরা ও হোমওয়ার্ক ম্যানেজমেন্ট ড্যাশবোর্ড -->
-                <div class="card rgb-card" style="margin-top: 15px; border: 2px solid #16a34a;">
-                    <h3 class="rgb-text">📅 অ্যাডমিন হাজিরা ও হোমওয়ার্ক ম্যানেজমেন্ট</h3>
-                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">
-                        এখান থেকে ছাত্র-ছাত্রীদের হাজিরা (তারিখ টাইপ করে বা টিক দিয়ে) এবং হোমওয়ার্ক আপডেট করুন:
+                <!-- ১. পাবলিক হাজিরা মনিটর (ক্যালেন্ডার আইকন সহ - এখন বড় সাইজে অ্যাডমিনে) -->
+                <div class="card rgb-card section-large" style="border: 2px solid #00ffff;">
+                    <h3 class="rgb-text">📊 ছাত্র-ছাত্রীদের হাজিরা ভিউ মনিটর (টুলটিপ ক্যালেন্ডার)</h3>
+                    <p style="font-size: 1rem; color: #475569; margin-bottom: 12px;">
+                        💡 ডানদিকের 📅 আইকনের ওপর মাউস বা কার্সর রাখলে DD-MM-YYYY ফরম্যাটে বিস্তারিত তারিখ দেখা যাবে।
+                    </p>
+                    <div id="publicAttendanceContainer" class="table-responsive"></div>
+                </div>
+
+                <!-- ২. স্মার্ট হাজিরা ও হোমওয়ার্ক এন্ট্রি বক্স (বড় সাইজে) -->
+                <div class="card rgb-card section-large" style="border: 2px solid #16a34a;">
+                    <h3 class="rgb-text">📝 দৈনিক হাজিরা ও হোমওয়ার্ক ব্যাকলগ এন্ট্রি</h3>
+                    <p style="font-size: 1rem; color: #475569; margin-bottom: 12px;">
+                        বক্সে কমা (,) দিয়ে পুরনো হাজিরার তারিখ তুলুন অথবা আজকের উপস্থিতির জন্য সরাসরি <strong>✔️</strong> বোতামে চাপ দিন:
                     </p>
                     <div id="adminAttendanceContainer" class="table-responsive"></div>
                 </div>
 
-                <div class="card rgb-card" style="margin-top: 15px;">
-                    <h3 class="rgb-text">📚 কোশ্চেন পেপার আপলোড (PDF: 20-60 KB)</h3>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top:10px;">
-                        <input type="text" id="qClassInput" placeholder="ক্লাসের নাম" class="rgb-input" style="width: 200px; padding: 8px;">
-                        <input type="file" id="qFileInput" accept=".pdf" style="border: 1px solid #cbd5e1; padding: 6px; border-radius: 6px; background: white;">
-                        <button onclick="uploadQuestionPaper()" class="btn btn-primary rgb-btn">আপলোড 📤</button>
+                <!-- ৩. কোশ্চেন পেপার আপলোড (বড় সাইজে) -->
+                <div class="card rgb-card section-large" style="border: 2px solid #4f46e5;">
+                    <h3 class="rgb-text">📚 কোশ্চেন পেপার ও স্টাডি হাব আপলোড (PDF: 20-60 KB)</h3>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top:12px;">
+                        <input type="text" id="qClassInput" placeholder="ক্লাসের নাম (যেমন: CLASS-IV)" class="rgb-input" style="width: 250px; padding: 12px; font-size:1.05rem;">
+                        <input type="file" id="qFileInput" accept=".pdf" style="border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; background: white; font-size:1rem;">
+                        <button onclick="uploadQuestionPaper()" class="btn btn-primary rgb-btn" style="padding:12px 24px; font-size:1.05rem;">আপলোড 📤</button>
                     </div>
                     <div id="adminQuestionList" class="table-responsive" style="margin-top: 15px;"></div>
                 </div>
 
-                <div class="admin-settings card rgb-card" style="margin-top: 15px;">
-                    <h3>ইনস্টিটিউট ও শিক্ষকের নাম পরিবর্তন</h3>
-                    <input type="text" id="editInstName" placeholder="ইনস্টিটিউটের নাম">
-                    <input type="text" id="editTeacherName" placeholder="শিক্ষকের নাম">
-                    <button onclick="updateBranding()" class="btn btn-primary rgb-btn">সেভ করুন</button>
-                </div>
-
-                <div class="card rgb-card" style="margin-top: 15px;">
-                    <h3>➕ নতুন ছাত্র/ছাত্রী যোগ করুন</h3>
-                    <div class="add-student-grid">
-                        <input type="text" id="newStName" placeholder="ছাত্রের নাম">
-                        <input type="text" id="newStClass" placeholder="ক্লাস">
-                        <input type="text" id="newStPhone" placeholder="মোবাইল নম্বর">
-                        <input type="text" id="newStAddress" placeholder="ঠিকানা">
-                    </div>
-                    <button onclick="addStudent()" class="btn btn-success rgb-btn" style="margin-top: 10px;">যোগ করুন</button>
-                </div>
-
-                <div class="card rgb-card" style="margin-top: 15px;">
-                    <h3>✏️ ছাত্র/ছাত্রী এডিট বা ডিলিট পরিচালনা</h3>
+                <!-- ৪. ছাত্র/ছাত্রী এডিট বা ডিলিট পরিচালনা (বড় সাইজে) -->
+                <div class="card rgb-card section-large" style="border: 2px solid #ca8a04;">
+                    <h3 class="rgb-text">✏️ ছাত্র/ছাত্রীদের প্রোফাইল ডাটা পরিচালনা (এডিট/ডিলিট)</h3>
                     <div id="adminStudentListContainer" class="table-responsive"></div>
                 </div>
 
-                <div class="card rgb-card" style="margin-top: 15px;">
+                <!-- ৫. নতুন ছাত্র যোগ করার ফর্ম -->
+                <div class="card rgb-card section-large">
+                    <h3>➕ নতুন ছাত্র/ছাত্রী যোগ করুন</h3>
+                    <div class="add-student-grid" style="margin-top:12px;">
+                        <input type="text" id="newStName" placeholder="ছাত্রের নাম" style="padding:12px; font-size:1rem;">
+                        <input type="text" id="newStClass" placeholder="ক্লাস" style="padding:12px; font-size:1rem;">
+                        <input type="text" id="newStPhone" placeholder="মোবাইল নম্বর" style="padding:12px; font-size:1rem;">
+                        <input type="text" id="newStAddress" placeholder="ঠিকানা" style="padding:12px; font-size:1rem;">
+                    </div>
+                    <button onclick="addStudent()" class="btn btn-success rgb-btn" style="margin-top: 15px; padding:12px 24px; font-size:1.05rem;">যোগ করুন</button>
+                </div>
+
+                <!-- ৬. ইনস্টিটিউট ও শিক্ষকের নাম পরিবর্তন -->
+                <div class="admin-settings card rgb-card section-large">
+                    <h3>ইনস্টিটিউট ও শিক্ষকের নাম পরিবর্তন</h3>
+                    <input type="text" id="editInstName" placeholder="ইনস্টিটিউটের নাম" style="padding:12px; font-size:1rem;">
+                    <input type="text" id="editTeacherName" placeholder="শিক্ষকের নাম" style="padding:12px; font-size:1rem;">
+                    <button onclick="updateBranding()" class="btn btn-primary rgb-btn" style="margin-top:10px; padding:10px 20px;">সেভ করুন</button>
+                </div>
+
+                <!-- ৭. ইনকাম রিপোর্ট -->
+                <div class="card rgb-card section-large">
                     <h3 class="rgb-text">💰 মাসিক ইনকাম ও রিসিট ফিল্টার রিপোর্ট</h3>
-                    <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
-                        <select id="reportMonthSelect" onchange="generateIncomeReport()" class="month-dropdown" style="border: 1px solid #cbd5e1;"></select>
-                        <input type="number" id="reportYearSelect" oninput="generateIncomeReport()" class="year-input" style="border: 1px solid #cbd5e1; width: 110px;" placeholder="সাল">
-                        <button onclick="window.print()" class="btn btn-warning rgb-btn" style="background: #059669;">PDF প্রিন্ট করুন 📄</button>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; margin-top:10px;">
+                        <select id="reportMonthSelect" onchange="generateIncomeReport()" class="month-dropdown" style="border: 1px solid #cbd5e1; padding:10px; font-size:1rem;"></select>
+                        <input type="number" id="reportYearSelect" oninput="generateIncomeReport()" class="year-input" style="border: 1px solid #cbd5e1; width: 120px; padding:10px; font-size:1rem;" placeholder="সাল">
+                        <button onclick="window.print()" class="btn btn-warning rgb-btn" style="background: #059669; padding:10px 20px; font-size:1rem;">PDF প্রিন্ট করুন 📄</button>
                     </div>
                     <div id="incomeReportContainer" class="table-responsive"></div>
                 </div>
@@ -173,10 +177,10 @@
 
     </main>
 
+    <!-- নিচের আপডেটেড নেভিগেশন বার (হাজিরা বাটন রিমুভড) -->
     <nav class="bottom-nav rgb-border-top">
         <button onclick="switchTab('slide-home')" class="nav-item active" id="nav-home">🏠 হোম</button>
         <button onclick="switchTab('slide-students')" class="nav-item" id="nav-students">👥 ছাত্র তালিকা</button>
-        <button onclick="switchTab('slide-attendance')" class="nav-item" id="nav-attendance">📅 হাজিরা</button>
         <button onclick="switchTab('slide-fees')" class="nav-item" id="nav-fees">💰 ফিস ও নম্বর</button>
         <button onclick="switchTab('slide-admin')" class="nav-item" id="nav-admin">⚙️ অ্যাডমিন</button>
     </nav>
