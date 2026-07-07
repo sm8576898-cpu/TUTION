@@ -49,23 +49,30 @@ body { background: var(--bg); color: #0f172a; padding-bottom: 80px; }
 .rgb-border { border: 2px solid #00ffff; animation: rgbBorderGlow 5s infinite; }
 .rgb-border-top { border-top: 3px solid #ff0055; animation: rgbBorderGlow 5s infinite; }
 
-/* ট্যাগ ও ব্যাজ ডিজাইন */
+/* ট্যাগ ডিজাইন */
 .tag-early { background: #dcfce7; color: #15803d; border: 1px solid #22c55e; padding: 3px 8px; border-radius: 20px; font-weight: bold; font-size: 0.75rem; display: inline-block; box-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
 .tag-late { background: #fee2e2; color: #b91c1c; border: 1px solid #ef4444; padding: 3px 8px; border-radius: 20px; font-weight: bold; font-size: 0.75rem; display: inline-block; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); animation: pulseWarning 1.5s infinite; }
 .tag-regular { background: #e0f2fe; color: #0369a1; border: 1px solid #38bdf8; padding: 3px 8px; border-radius: 20px; font-weight: bold; font-size: 0.75rem; display: inline-block; }
 
-@keyframes pulseWarning {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
+@keyframes pulseWarning { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-.att-counter-box { display: flex; align-items: center; gap: 8px; }
-.att-btn { width: 34px; height: 34px; border-radius: 50%; border: none; font-size: 1.1rem; font-weight: bold; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-.att-btn:active { transform: scale(0.9); }
-.att-plus { background: var(--success); }
-.att-minus { background: var(--danger); }
-.att-display { background: #f1f5f9; color: #1e293b; font-weight: 800; font-size: 0.95rem; padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; min-width: 80px; text-align: center; }
+/* স্মার্ট হাজিরা ইনপুট এবং টিক (✔️) বাটন */
+.att-admin-box { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.date-input-box { width: 140px; padding: 6px; border: 2px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; font-weight: bold; }
+.btn-check { width: 34px; height: 34px; border-radius: 50%; border: none; background: #16a34a; color: white; cursor: pointer; font-size: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+.btn-check:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(22, 163, 74, 0.4); }
+.btn-check:active { transform: scale(0.9); }
+
+/* কাস্টম টুলটিপ (Hover Effect) ডিজাইন */
+.tooltip-container { position: relative; display: inline-block; cursor: help; background: #f1f5f9; padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: bold; color: var(--primary-dark); }
+.tooltip-text {
+    visibility: hidden; width: max-content; max-width: 250px; background-color: var(--card-bg); color: #fff;
+    text-align: center; border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; font-weight: normal;
+    position: absolute; z-index: 10; bottom: 130%; left: 50%; transform: translateX(-50%);
+    opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid #00ffff;
+}
+.tooltip-container:hover .tooltip-text, .tooltip-container:active .tooltip-text { visibility: visible; opacity: 1; }
+.tooltip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: var(--card-bg) transparent transparent transparent; }
 
 .app-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 .app-header h1 { font-size: 1.3rem; font-weight: 800; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
@@ -141,7 +148,7 @@ th { background: #f1f5f9; font-weight: 700; color: #334155; }
 .nav-item.active { color: var(--primary); font-weight: 800; }
 
 @media print {
-    .bottom-nav, .app-header, .upload-box, .btn, .date-selector, #loginBox, .admin-badge, .admin-settings, .att-btn { display: none !important; }
+    .bottom-nav, .app-header, .upload-box, .btn, .date-selector, #loginBox, .admin-badge, .admin-settings { display: none !important; }
     body { background: white; padding: 0; }
     .slide { display: block !important; margin-bottom: 30px; }
     .card, .rgb-card { box-shadow: none !important; border: 1px solid #ccc !important; animation: none !important; }
