@@ -41,16 +41,14 @@ window.onload = () => {
             if(document.getElementById('adminControls')) document.getElementById('adminControls').classList.remove('hidden');
             if(document.getElementById('publicMonthDisplay')) document.getElementById('publicMonthDisplay').classList.add('hidden');
             if(document.getElementById('adminDateSelector')) document.getElementById('adminDateSelector').classList.remove('hidden');
-            renderStudentsGrid();
-            renderQuestionHub();
+            renderAll();
         } else {
             isAdminUnlocked = false;
             if(document.getElementById('loginBox')) document.getElementById('loginBox').classList.remove('hidden');
             if(document.getElementById('adminControls')) document.getElementById('adminControls').classList.add('hidden');
             if(document.getElementById('publicMonthDisplay')) document.getElementById('publicMonthDisplay').classList.remove('hidden');
             if(document.getElementById('adminDateSelector')) document.getElementById('adminDateSelector').classList.add('hidden');
-            renderStudentsGrid();
-            renderQuestionHub();
+            renderAll();
         }
     });
 
@@ -65,7 +63,6 @@ window.onload = () => {
 
     updateDisplayTexts();
     renderAll();
-
     loadDataFromCloud();
     incrementViews();
 };
@@ -76,7 +73,6 @@ function toBanglaNumber(num) {
     return num.toString().split('').map(d => banglaDigits[d] || d).join('');
 }
 
-// পাসওয়ার্ড দেখার বা লুকানোর চোখের আইকন লজিক
 function togglePasswordVisibility() {
     const passInput = document.getElementById('adminPasswordInput');
     const eyeIcon = document.getElementById('togglePassEye');
@@ -96,15 +92,10 @@ function togglePasswordVisibility() {
 function getPaymentStatusBadge(feePaid, feeDate) {
     if (!feePaid) return `<span class="tag-late" style="background:#fee2e2; color:#dc2626;">বকেয়া (Due)</span>`;
     if (!feeDate) return `<span class="tag-regular">পেইড (তারিখ নেই)</span>`;
-
     let day = new Date(feeDate).getDate();
-    if (day <= 7) {
-        return `<span class="tag-early">🌟 Early Payer (${toBanglaNumber(day)} তারিখ)</span>`;
-    } else if (day >= 13) {
-        return `<span class="tag-late">⚠️ Late Fee (${toBanglaNumber(day)} তারিখ)</span>`;
-    } else {
-        return `<span class="tag-regular">✔️ Regular (${toBanglaNumber(day)} তারিখ)</span>`;
-    }
+    if (day <= 7) return `<span class="tag-early">🌟 Early Payer (${toBanglaNumber(day)} তারিখ)</span>`;
+    if (day >= 13) return `<span class="tag-late">⚠️ Late Fee (${toBanglaNumber(day)} তারিখ)</span>`;
+    return `<span class="tag-regular">✔️ Regular (${toBanglaNumber(day)} তারিখ)</span>`;
 }
 
 function initLifetimeDateSelectors() {
@@ -116,7 +107,6 @@ function initLifetimeDateSelectors() {
     const repYearInput = document.getElementById('reportYearSelect');
 
     if (!monthSel || !yearInput) return;
-
     monthSel.innerHTML = '';
     if(adminMonthSel) adminMonthSel.innerHTML = '';
     if(repMonthSel) repMonthSel.innerHTML = '';
@@ -132,7 +122,6 @@ function initLifetimeDateSelectors() {
 
     monthSel.value = banglaMonths[now.getMonth()];
     yearInput.value = currentYear;
-    
     if(adminMonthSel) adminMonthSel.value = banglaMonths[now.getMonth()];
     if(adminYearInput) adminYearInput.value = currentYear;
     if(repMonthSel) repMonthSel.value = banglaMonths[now.getMonth()];
@@ -171,7 +160,7 @@ function getMonthData(student, month) {
     if (!student.monthlyData) student.monthlyData = {};
     if (!student.monthlyData[month]) {
         student.monthlyData[month] = {
-            attendedDays: 0,
+            attendedDates: [], // হাজিরার তারিখ সংরক্ষণের নতুন অ্যারে
             examMarks: 0,
             feePaid: false,
             feeAmount: 0,
@@ -179,6 +168,12 @@ function getMonthData(student, month) {
             hwDone: false
         };
     }
+    // পুরনো ডেটাবেসের সাথে মেলানোর জন্য কনভার্সন
+    if(student.monthlyData[month].attendedDays !== undefined && !student.monthlyData[month].attendedDates) {
+        student.monthlyData[month].attendedDates = [];
+        delete student.monthlyData[month].attendedDays;
+    }
+    if(!student.monthlyData[month].attendedDates) student.monthlyData[month].attendedDates = [];
     return student.monthlyData[month];
 }
 
@@ -225,7 +220,6 @@ function saveQuestionsData() {
     renderQuestionHub();
 }
 
-// ভিউজ কাউন্টার একদম ১ থেকে শুরু হওয়ার আপডেট
 function incrementViews() {
     let views = localStorage.getItem('tuition_views_clean') || 0;
     views = parseInt(views) + 1;
@@ -236,7 +230,6 @@ function incrementViews() {
 function switchTab(slideId) {
     document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    
     if(document.getElementById(slideId)) document.getElementById(slideId).classList.add('active');
     let navId = slideId.replace('slide-', 'nav-');
     if(document.getElementById(navId)) document.getElementById(navId).classList.add('active');
@@ -250,7 +243,6 @@ function renderAll() {
     renderAdminStudentList();
     renderQuestionHub();
     generateIncomeReport();
-    
     const countSpan = document.getElementById('totalStudentsCount');
     if (countSpan) countSpan.innerText = students.length;
 }
@@ -263,12 +255,17 @@ function renderLeaderboardsAndSummary() {
     });
     if(document.getElementById('totalFeeCollected')) document.getElementById('totalFeeCollected').innerText = totalFee.toLocaleString('en-IN');
 
-    const sortedByAtt = [...students].sort((a, b) => getMonthData(b, currentMonth).attendedDays - getMonthData(a, currentMonth).attendedDays);
+    const sortedByAtt = [...students].sort((a, b) => {
+        let aCount = getMonthData(a, currentMonth).attendedDates.length;
+        let bCount = getMonthData(b, currentMonth).attendedDates.length;
+        return bCount - aCount;
+    });
+    
     const topAttList = document.getElementById('topAttendanceList');
     if(topAttList) {
         topAttList.innerHTML = '';
         sortedByAtt.slice(0, 2).forEach(s => {
-            let att = getMonthData(s, currentMonth).attendedDays;
+            let att = getMonthData(s, currentMonth).attendedDates.length;
             let percentage = ((att / WORKING_DAYS) * 100).toFixed(1);
             topAttList.innerHTML += `<li><span>${s.name} (${s.class})</span> <span>${percentage}%</span></li>`;
         });
@@ -291,7 +288,11 @@ function renderStudentsGrid() {
     grid.innerHTML = '';
     students.forEach(s => {
         let mData = getMonthData(s, currentMonth);
-        let percentage = ((mData.attendedDays / WORKING_DAYS) * 100).toFixed(0);
+        let daysArray = mData.attendedDates || [];
+        let attCount = daysArray.length;
+        let datesStr = daysArray.length > 0 ? toBanglaNumber(daysArray.join(', ')) : "কোনো হাজিরা নেই";
+
+        let percentage = ((attCount / WORKING_DAYS) * 100).toFixed(0);
         let badge = percentage >= 100 ? "🌟 100% Present" : (mData.examMarks >= 90 ? "🏆 Topper" : "👍 Active");
         let payBadge = getPaymentStatusBadge(mData.feePaid, mData.feeDate);
 
@@ -308,7 +309,10 @@ function renderStudentsGrid() {
                         <p style="font-size:0.85rem; color:#475569;">${s.class}</p>
                         <div style="margin-top:4px;">${payBadge}</div>
                         <div class="progress-container">
-                            <div class="progress-label"><span>উপস্থিতি</span> <span>${percentage}%</span></div>
+                            <div class="progress-label tooltip-container" style="background:transparent; border:none; padding:0;">
+                                <span>উপস্থিতি (${toBanglaNumber(attCount)} দিন)</span> <span>${percentage}%</span>
+                                <div class="tooltip-text" style="bottom:150%;"><strong>হাজিরার তারিখ:</strong><br>${datesStr}</div>
+                            </div>
                             <div class="progress-bar-bg">
                                 <div class="progress-bar-fill" style="width: ${Math.min(percentage, 100)}%"></div>
                             </div>
@@ -324,34 +328,56 @@ function renderStudentsGrid() {
     });
 }
 
+// ৩. নতুন স্মার্ট ডেট-লগ হাজিরা টেবিল
 function renderAttendanceTable() {
     const container = document.getElementById('attendanceListContainer');
     if(!container) return;
     let html = `<table><tr>
         <th>নাম</th>
-        <th>স্মার্ট হাজিরা কাউন্টার (ক্লিক করুন)</th>
+        <th>হাজিরা (তারিখ ও হিসাব)</th>
         <th>হোমওয়ার্ক</th>
         <th>অ্যাকশন</th>
     </tr>`;
 
     students.forEach((s, idx) => {
         let mData = getMonthData(s, currentMonth);
-        let att = parseInt(mData.attendedDays) || 0;
+        let daysArray = mData.attendedDates || [];
+        let attCount = daysArray.length;
+        let datesStrDisplay = daysArray.length > 0 ? daysArray.join(', ') : "";
+        let tooltipStr = daysArray.length > 0 ? toBanglaNumber(daysArray.join(', ')) : "এখনো কোনো হাজিরা নেই";
+
+        let attendanceContent = "";
+
+        // অ্যাডমিন মোড হলে এডিট করার বক্স ও টিক বাটন দেখাবে
+        if (isAdminUnlocked) {
+            attendanceContent = `
+                <div class="att-admin-box">
+                    <input type="text" class="date-input-box" placeholder="যেমন: 1, 5, 12" value="${datesStrDisplay}" onchange="updateAttendanceDates(${idx}, this.value)" title="পুরনো তারিখগুলি কমা (,) দিয়ে লিখুন">
+                    <button onclick="markTodayAttendance(${idx})" class="btn-check" title="আজকের হাজিরা দিন">✔️</button>
+                    <span style="font-weight:900; color:#1e293b;">= ${toBanglaNumber(attCount)} দিন</span>
+                </div>
+            `;
+        } 
+        // সাধারণ ছাত্র-ছাত্রীদের জন্য লকড টুলটিপ ভিউ
+        else {
+            attendanceContent = `
+                <div class="tooltip-container">
+                    <span style="font-size:1rem;">${toBanglaNumber(attCount)} / ২৬ দিন</span>
+                    <div class="tooltip-text"><strong>উপস্থিতির তারিখগুলি:</strong><br>${tooltipStr}</div>
+                </div>
+            `;
+        }
 
         html += `<tr>
             <td><strong>${s.name}</strong></td>
+            <td>${attendanceContent}</td>
             <td>
-                <div class="att-counter-box">
-                    <button onclick="quickChangeAttendance(${idx}, -1)" class="att-btn att-minus" title="১ দিন কমান">➖</button>
-                    <span class="att-display">${toBanglaNumber(att)} / ২৬ দিন</span>
-                    <button onclick="quickChangeAttendance(${idx}, 1)" class="att-btn att-plus" title="আজকের হাজিরা দিন (+১)">➕</button>
-                </div>
+                <input type="checkbox" ${mData.hwDone ? 'checked' : ''} onchange="toggleHW(${idx})" style="width:18px; height:18px;" ${!isAdminUnlocked ? 'disabled' : ''}> ${mData.hwDone ? 'হয়েছে ✔️' : 'বাকি'}
             </td>
             <td>
-                <input type="checkbox" ${mData.hwDone ? 'checked' : ''} onchange="toggleHW(${idx})" style="width:18px; height:18px;"> ${mData.hwDone ? 'হয়েছে ✔️' : 'বাকি'}
-            </td>
-            <td>
-                ${!mData.hwDone ? `<a href="https://wa.me/91${s.phone}?text=${encodeURIComponent('নমস্কার, আজকের হোমওয়ার্ক সম্পূর্ণ করা হয়নি। অনুগ্রহ করে নজর দিন।')}" target="_blank" class="btn-wa">সতর্কবার্তা 💬</a>` : '✔️'}
+                ${!mData.hwDone 
+                    ? `<a href="https://wa.me/91${s.phone}?text=${encodeURIComponent('নমস্কার, আজকের হোমওয়ার্ক সম্পূর্ণ করা হয়নি। অনুগ্রহ করে নজর দিন।')}" target="_blank" class="btn-wa">সতর্কবার্তা 💬</a>` 
+                    : '✔️'}
             </td>
         </tr>`;
     });
@@ -359,19 +385,41 @@ function renderAttendanceTable() {
     container.innerHTML = html;
 }
 
-function quickChangeAttendance(index, delta) {
+// অ্যাডমিনের টাইপ করা কমা-দেওয়া তারিখ আপডেট করার লজিক
+function updateAttendanceDates(index, val) {
     let mData = getMonthData(students[index], currentMonth);
-    let current = parseInt(mData.attendedDays) || 0;
-    let updated = current + delta;
+    if (!val.trim()) {
+        mData.attendedDates = [];
+    } else {
+        // স্ট্রিং ভেঙে শুধু সঠিক সংখ্যা (১-৩১) ফিল্টার ও সর্ট করা
+        let rawArr = val.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d) && d > 0 && d <= 31);
+        mData.attendedDates = [...new Set(rawArr)].sort((a, b) => a - b);
+    }
+    saveData();
+}
 
-    if (updated < 0) updated = 0;
-    if (updated > WORKING_DAYS) updated = WORKING_DAYS;
-
-    mData.attendedDays = updated;
+// এক ক্লিকে আজকের তারিখ জমা করার লজিক
+function markTodayAttendance(index) {
+    let mData = getMonthData(students[index], currentMonth);
+    let today = new Date().getDate(); // আজকের তারিখ (1-31)
+    
+    if (!mData.attendedDates) mData.attendedDates = [];
+    
+    if (mData.attendedDates.includes(today)) {
+        alert(`❌ আজকের তারিখ (${toBanglaNumber(today)}) আগেই জমা করা আছে!`);
+        return;
+    }
+    
+    mData.attendedDates.push(today);
+    mData.attendedDates.sort((a, b) => a - b);
     saveData();
 }
 
 function toggleHW(index) {
+    if(!isAdminUnlocked) {
+        alert("🔒 হোমওয়ার্ক আপডেট করতে অ্যাডমিনে লগইন করুন!");
+        return;
+    }
     let mData = getMonthData(students[index], currentMonth);
     mData.hwDone = !mData.hwDone;
     saveData();
@@ -397,20 +445,20 @@ function renderFeesTable() {
         html += `<tr>
             <td><strong>${s.name}</strong></td>
             <td>
-                <button onclick="toggleFee(${idx})" class="btn ${mData.feePaid ? 'btn-success' : 'btn-danger'}" style="padding: 6px 10px; font-size: 0.8rem;">
+                <button onclick="toggleFee(${idx})" class="btn ${mData.feePaid ? 'btn-success' : 'btn-danger'}" style="padding: 6px 10px; font-size: 0.8rem;" ${!isAdminUnlocked ? 'disabled' : ''}>
                     ${mData.feePaid ? 'পেইড ✔️' : 'বকেয়া'}
                 </button>
             </td>
             <td>
-                <input type="date" value="${mData.feeDate || ''}" onchange="updateFeeDate(${idx}, this.value)" style="padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem;">
+                <input type="date" value="${mData.feeDate || ''}" onchange="updateFeeDate(${idx}, this.value)" style="padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem;" ${!isAdminUnlocked ? 'disabled' : ''}>
             </td>
             <td>${statusBadge}</td>
             <td>
                 <input type="number" placeholder="৳ পরিমাণ" value="${mData.feeAmount}" style="width:75px; padding:4px;" 
-                onchange="updateFeeAmount(${idx}, this.value)">
+                onchange="updateFeeAmount(${idx}, this.value)" ${!isAdminUnlocked ? 'disabled' : ''}>
             </td>
             <td>
-                <input type="number" value="${mData.examMarks}" style="width:55px; padding:4px;" onchange="updateMarks(${idx}, this.value)">
+                <input type="number" value="${mData.examMarks}" style="width:55px; padding:4px;" onchange="updateMarks(${idx}, this.value)" ${!isAdminUnlocked ? 'disabled' : ''}>
             </td>
             <td>
                 ${!mData.feePaid 
@@ -424,6 +472,7 @@ function renderFeesTable() {
 }
 
 function toggleFee(index) {
+    if(!isAdminUnlocked) return;
     let mData = getMonthData(students[index], currentMonth);
     mData.feePaid = !mData.feePaid;
     if (mData.feePaid && !mData.feeDate) {
@@ -433,6 +482,7 @@ function toggleFee(index) {
 }
 
 function updateFeeDate(index, val) {
+    if(!isAdminUnlocked) return;
     let mData = getMonthData(students[index], currentMonth);
     mData.feeDate = val;
     if(val) mData.feePaid = true;
@@ -440,11 +490,13 @@ function updateFeeDate(index, val) {
 }
 
 function updateFeeAmount(index, val) {
+    if(!isAdminUnlocked) return;
     getMonthData(students[index], currentMonth).feeAmount = parseInt(val) || 0;
     saveData();
 }
 
 function updateMarks(index, val) {
+    if(!isAdminUnlocked) return;
     getMonthData(students[index], currentMonth).examMarks = parseInt(val) || 0;
     saveData();
 }
@@ -484,7 +536,6 @@ function uploadQuestionPaper() {
             sizeKB: fileSizeKB.toFixed(1),
             url: fileDataUrl
         });
-
         classInput.value = "";
         fileInput.value = "";
         saveQuestionsData();
@@ -540,14 +591,12 @@ function searchStudent() {
     const resultsDiv = document.getElementById('searchResults');
     if(!resultsDiv) return;
     resultsDiv.innerHTML = '';
-
     if (query.trim() === '') return;
-
     const filtered = students.filter(s => s.name.toLowerCase().includes(query));
     filtered.forEach(s => {
         let mData = getMonthData(s, currentMonth);
         resultsDiv.innerHTML += `<div class="search-item" onclick="switchTab('slide-students')">
-            <strong>${s.name}</strong> (${s.class}) - উপস্থিতি: ${mData.attendedDays} দিন
+            <strong>${s.name}</strong> (${s.class}) - উপস্থিতি: ${mData.attendedDates.length} দিন
         </div>`;
     });
 }
@@ -555,12 +604,10 @@ function searchStudent() {
 function unlockAdmin() {
     const email = document.getElementById('adminEmailInput')?.value;
     const password = document.getElementById('adminPasswordInput')?.value;
-
     if (!email || !password) {
         alert("❌ অনুগ্রহ করে ইমেইল এবং পাসওয়ার্ড দুটিই লিখুন!");
         return;
     }
-
     auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
             alert("✅ অ্যাডমিন লগইন সফল হয়েছে!");
@@ -600,12 +647,10 @@ function addStudent() {
     const cls = document.getElementById('newStClass')?.value;
     const phone = document.getElementById('newStPhone')?.value;
     const address = document.getElementById('newStAddress')?.value;
-
     if (!name || !cls) {
         alert("❌ অনুগ্রহ করে অন্তত ছাত্রের নাম এবং ক্লাস লিখুন!");
         return;
     }
-
     const newId = students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1;
     students.push({
         id: newId,
@@ -615,12 +660,10 @@ function addStudent() {
         address: address || "N/A",
         monthlyData: {}
     });
-
     if(document.getElementById('newStName')) document.getElementById('newStName').value = '';
     if(document.getElementById('newStClass')) document.getElementById('newStClass').value = '';
     if(document.getElementById('newStPhone')) document.getElementById('newStPhone').value = '';
     if(document.getElementById('newStAddress')) document.getElementById('newStAddress').value = '';
-
     saveData();
     alert(`✅ "${name}" সফলভাবে তালিকায় যোগ হয়েছে!`);
 }
@@ -635,12 +678,10 @@ function editStudent(index) {
     if (newPhone === null) return;
     let newAddress = prompt("ঠিকানা পরিবর্তন করুন:", s.address);
     if (newAddress === null) return;
-
     students[index].name = newName.trim() || s.name;
     students[index].class = newClass.trim() || s.class;
     students[index].phone = newPhone.trim() || s.phone;
     students[index].address = newAddress.trim() || s.address;
-
     saveData();
     alert(`✅ "${students[index].name}"-এর তথ্য সফলভাবে আপডেট করা হয়েছে!`);
 }
@@ -673,11 +714,9 @@ function renderAdminStudentList() {
 function generateIncomeReport() {
     const container = document.getElementById('incomeReportContainer');
     if (!container) return;
-
     const m = document.getElementById('reportMonthSelect')?.value;
     let y = document.getElementById('reportYearSelect')?.value || new Date().getFullYear();
     if(!m) return;
-
     const filterMonthStr = `${m} ${toBanglaNumber(y)}`;
     let totalIncome = 0;
 
@@ -710,7 +749,6 @@ function generateIncomeReport() {
         <td colspan="4" style="text-align: right;"><strong>মোট মাসিক আয় (Total Income):</strong></td>
         <td><strong style="color: #166534;">৳ ${totalIncome.toLocaleString('en-IN')}</strong></td>
     </tr>`;
-
     html += `</table>`;
     container.innerHTML = html;
 }

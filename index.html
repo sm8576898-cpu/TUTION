@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <!-- হেডার: RGB অ্যানিমেটেড গ্লো থিম + মাস/সাল প্রদর্শন -->
+    <!-- হেডার: RGB অ্যানিমেটেড গ্লো থিম -->
     <header class="app-header rgb-glow">
         <div class="branding">
             <h1 id="instituteNameDisplay" class="rgb-text">SM Coaching Institute</h1>
@@ -20,20 +20,17 @@
                 📅 মাস: <strong id="displayHeaderMonth">জুলাই ২০২৬</strong>
             </div>
 
-            <!-- অ্যাডমিন লগইন করলে এই কন্ট্রোল দৃশ্যমান হবে -->
             <div id="adminDateSelector" class="date-selector hidden">
                 <select id="monthSelect" onchange="changeMonthYear()" class="month-dropdown"></select>
                 <input type="number" id="yearSelect" oninput="changeMonthYear()" class="year-input" placeholder="সাল (যেমন: 2026)">
             </div>
 
-            <!-- ভিউজ কাউন্টার একদম ১ থেকে শুরু হবে -->
             <div class="view-counter rgb-border">
                 <span>👁️ ভিউজ: <strong id="liveViews">1</strong></span>
             </div>
         </div>
     </header>
 
-    <!-- মূল কনটেন্ট (৫টি স্লাইড/ট্যাব) -->
     <main class="content-container">
 
         <!-- SLIDE 1: হোম / ড্যাশবোর্ড -->
@@ -81,11 +78,12 @@
             <div id="studentsGrid" class="students-grid"></div>
         </section>
 
-        <!-- SLIDE 3: দৈনিক হাজিরা ও হোমওয়ার্ক -->
+        <!-- SLIDE 3: দৈনিক হাজিরা ও হোমওয়ার্ক (Tooltips + Backlog Entry) -->
         <section id="slide-attendance" class="slide">
             <h2>📅 স্মার্ট হাজিরা ও হোমওয়ার্ক খাতা (<span class="current-month-text">জুলাই ২০২৬</span>)</h2>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">
-                💡 নিয়ম: প্রতিদিন ক্লাসে এসে উপস্থিত ছাত্রের নামের পাশের <strong>[ ➕ ]</strong> বোতামে একবার ট্যাপ করুন! কোনো টাইপ করতে হবে না।
+                💡 <strong>অ্যাডমিন:</strong> কমা (,) দিয়ে পুরনো হাজিরার তারিখ বসান অথবা আজকের জন্য <strong>✔️</strong> ট্যাপ করুন!<br>
+                💡 <strong>ছাত্র-ছাত্রী:</strong> হাজিরার উপর মাউস রাখলে বা চাপ দিলে কোন দিন এসেছেন তা ভাসমান বক্সে দেখতে পাবেন।
             </p>
             <div class="attendance-header">
                 <p>মাসের কাজের দিন (রবিবার বাদে স্বয়ংক্রিয়): <strong id="workingDaysCount">২৬</strong> দিন</p>
@@ -106,17 +104,13 @@
         <section id="slide-admin" class="slide">
             <h2>⚙️ অ্যাডমিন সিকিউরিটি ও রিপোর্ট</h2>
             
-            <!-- ইমেইল ও পাসওয়ার্ড (চোখের আইকন সহ) লগইন বক্স -->
             <div id="loginBox" class="card rgb-card">
                 <h3 class="rgb-text">🔒 অ্যাডমিন ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন</h3>
                 <input type="email" id="adminEmailInput" placeholder="অ্যাডমিন ইমেইল লিখুন" class="rgb-input" style="margin-top: 10px;">
-                
-                <!-- পাসওয়ার্ড দেখার চোখের আইকন (Eye Symbol) -->
                 <div style="position: relative; margin-top: 6px;">
                     <input type="password" id="adminPasswordInput" placeholder="পাসওয়ার্ড লিখুন" class="rgb-input" style="width: 100%; padding-right: 42px; margin: 0;">
                     <span onclick="togglePasswordVisibility()" id="togglePassEye" title="পাসওয়ার্ড দেখুন" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem; user-select: none;">👁️</span>
                 </div>
-
                 <button onclick="unlockAdmin()" class="btn btn-success rgb-btn" style="margin-top: 14px; width: 100%;">লগইন করুন</button>
             </div>
 
@@ -125,9 +119,9 @@
                 <button onclick="lockAdmin()" class="btn btn-danger">লগআউট (লক করুন)</button>
 
                 <div class="card rgb-card" style="margin-top: 15px;">
-                    <h3 class="rgb-text">📅 ড্যাশবোর্ডের মাস ও সাল নির্বাচন (Admin Controlled)</h3>
+                    <h3 class="rgb-text">📅 ড্যাশবোর্ডের মাস ও সাল নির্বাচন</h3>
                     <p style="font-size: 0.85rem; color: #475569; margin-bottom: 10px;">
-                        মাস সিলেক্ট করুন এবং নিজের ইচ্ছামতো যেকোনো সাল টাইপ করুন (যেমন: 3000, 4568):
+                        মাস সিলেক্ট করুন এবং নিজের ইচ্ছামতো যেকোনো সাল টাইপ করুন (যেমন: 2026):
                     </p>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                         <select id="adminPanelMonthSelect" onchange="syncAdminPanelDate()" class="month-dropdown" style="border: 1px solid #cbd5e1;"></select>
@@ -158,12 +152,12 @@
                 <div class="card rgb-card" style="margin-top: 15px;">
                     <h3>➕ নতুন ছাত্র/ছাত্রী যোগ করুন</h3>
                     <div class="add-student-grid">
-                        <input type="text" id="newStName" placeholder="ছাত্রের নাম (যেমন: আকাশ)">
-                        <input type="text" id="newStClass" placeholder="ক্লাস (যেমন: Class 9)">
-                        <input type="text" id="newStPhone" placeholder="মোবাইল নম্বর (১০ ডিজিট)">
+                        <input type="text" id="newStName" placeholder="ছাত্রের নাম">
+                        <input type="text" id="newStClass" placeholder="ক্লাস">
+                        <input type="text" id="newStPhone" placeholder="মোবাইল নম্বর">
                         <input type="text" id="newStAddress" placeholder="ঠিকানা">
                     </div>
-                    <button onclick="addStudent()" class="btn btn-success rgb-btn" style="margin-top: 10px;">যোগ করুন (Add Student)</button>
+                    <button onclick="addStudent()" class="btn btn-success rgb-btn" style="margin-top: 10px;">যোগ করুন</button>
                 </div>
 
                 <div class="card rgb-card" style="margin-top: 15px;">
@@ -172,10 +166,7 @@
                 </div>
 
                 <div class="card rgb-card" style="margin-top: 15px;">
-                    <h3 class="rgb-text">💰 মাসিক ইনকাম, তারিখ ও রিসিট ফিল্টার রিপোর্ট</h3>
-                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">
-                        যেকোনো মাস সিলেক্ট করে ও যেকোনো সাল টাইপ করে পেমেন্টের তারিখ ও ট্যাগ সহ বিস্তারিত রিপোর্ট দেখুন এবং প্রিন্ট করুন।
-                    </p>
+                    <h3 class="rgb-text">💰 মাসিক ইনকাম ও রিসিট ফিল্টার রিপোর্ট</h3>
                     <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;">
                         <select id="reportMonthSelect" onchange="generateIncomeReport()" class="month-dropdown" style="border: 1px solid #cbd5e1;"></select>
                         <input type="number" id="reportYearSelect" oninput="generateIncomeReport()" class="year-input" style="border: 1px solid #cbd5e1; width: 110px;" placeholder="সাল">
@@ -196,7 +187,6 @@
         <button onclick="switchTab('slide-admin')" class="nav-item" id="nav-admin">⚙️ অ্যাডমিন</button>
     </nav>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
