@@ -231,11 +231,8 @@ function renderAll() {
     renderStudentsGrid();
     renderPublicAttendanceTable();
     renderAdminAttendanceTable();
-    
-    // নতুন: ফিস টেবিল রেন্ডারিং
     renderPublicFeesTable();
     renderAdminFeesTable();
-    
     renderAdminStudentList();
     renderQuestionHub();
     generateIncomeReport();
@@ -403,40 +400,38 @@ function toggleHW(index) {
     saveData();
 }
 
-// নতুন: পাবলিক ফিস টেবিল (ক্লিন ভিউ)
 function renderPublicFeesTable() {
     const container = document.getElementById('publicFeesContainer');
     if(!container) return;
     let html = `<table><tr>
         <th>নাম</th>
         <th>স্ট্যাটাস ট্যাগ</th>
-        <th>টাকার পরিমাণ (৳)</th>
-        <th>পরীক্ষার নম্বর</th>
+        <th style="text-align:right;">টাকার পরিমাণ (৳)</th>
+        <th style="text-align:right;">পরীক্ষার নম্বর</th>
     </tr>`;
 
     students.forEach((s) => {
         let mData = getMonthData(s, currentMonth);
         let statusBadge = getPaymentStatusBadge(mData.feePaid, mData.feeDate);
-        let amountStr = mData.feePaid ? `৳ ${toBanglaNumber(mData.feeAmount)}` : `<span style="color:#dc2626;">বকেয়া</span>`;
+        let amountStr = mData.feePaid ? `৳ ${toBanglaNumber(mData.feeAmount)}` : `<span style="color:#dc2626; font-weight:bold;">বকেয়া</span>`;
         let marksStr = mData.examMarks ? `${toBanglaNumber(mData.examMarks)}` : "-";
 
         html += `<tr>
             <td><strong>${s.name}</strong></td>
             <td>${statusBadge}</td>
-            <td><strong>${amountStr}</strong></td>
-            <td><strong>${marksStr}</strong></td>
+            <td style="text-align:right; font-size:1.05rem;"><strong>${amountStr}</strong></td>
+            <td style="text-align:right; font-size:1.05rem;"><strong>${marksStr}</strong></td>
         </tr>`;
     });
     html += `</table>`;
     container.innerHTML = html;
 }
 
-// নতুন: অ্যাডমিন ফিস টেবিল (এডিটেবল ও অটো-সাম সহ)
 function renderAdminFeesTable() {
     const container = document.getElementById('adminFeesContainer');
     if(!container) return;
     
-    let totalCollected = 0; // অ্যাডমিন অটো-সাম ভেরিয়েবল
+    let totalCollected = 0;
 
     let html = `<table><tr>
         <th>নাম</th>
@@ -449,8 +444,6 @@ function renderAdminFeesTable() {
 
     students.forEach((s, idx) => {
         let mData = getMonthData(s, currentMonth);
-        
-        // অটো-সাম ক্যালকুলেশন
         if(mData.feePaid) {
             totalCollected += parseInt(mData.feeAmount) || 0;
         }
@@ -481,7 +474,6 @@ function renderAdminFeesTable() {
     html += `</table>`;
     container.innerHTML = html;
 
-    // অটো-সাম ডিসপ্লে আপডেট করা
     const sumEl = document.getElementById('adminTotalFeesCollected');
     if(sumEl) sumEl.innerText = `৳ ${totalCollected.toLocaleString('en-IN')}`;
 }
@@ -556,10 +548,56 @@ function renderAdminStudentList() {
     const container = document.getElementById('adminStudentListContainer'); if (!container) return;
     container.innerHTML = `<table>` + students.map((s, idx) => `<tr><td><strong>${s.name}</strong></td><td>${s.class}</td><td><button onclick="editStudent(${idx})" class="btn btn-warning" style="padding:4px 8px; font-size:0.8rem;">এডিট</button> <button onclick="deleteStudent(${idx})" class="btn btn-danger" style="padding:4px 8px; font-size:0.8rem;">ডিলিট</button></td></tr>`).join('') + `</table>`;
 }
+
+// 🖨️ প্রিন্ট ও রিপোর্ট তৈরির আপডেট ফাংশন
 function generateIncomeReport() {
     const container = document.getElementById('incomeReportContainer'); if (!container) return;
-    const m = document.getElementById('reportMonthSelect')?.value; let y = document.getElementById('reportYearSelect')?.value || new Date().getFullYear(); if(!m) return;
-    const fStr = `${m} ${toBanglaNumber(y)}`; let total = 0;
-    let html = `<table>` + students.map(s => { let amount = s.monthlyData[fStr]?.feePaid ? (parseInt(s.monthlyData[fStr].feeAmount) || 0) : 0; total += amount; return `<tr><td><strong>${s.name}</strong></td><td>${s.class}</td><td>৳ ${amount.toLocaleString('en-IN')}</td></tr>`; }).join('') + `<tr><td colspan="2"><strong>মোট মাসিক আয়:</strong></td><td><strong style="color: green;">৳ ${total.toLocaleString('en-IN')}</strong></td></tr></table>`;
+    const m = document.getElementById('reportMonthSelect')?.value; 
+    let y = document.getElementById('reportYearSelect')?.value || new Date().getFullYear(); 
+    if(!m) return;
+    
+    const filterMonthStr = `${m} ${toBanglaNumber(y)}`; 
+    let totalIncome = 0;
+
+    // রিপোর্টের টাইটেল (যা শুধু প্রিন্টে সুন্দর দেখাবে)
+    let html = `
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="margin:0; color:#3730a3;">জ্ঞানকুঠির - Tuition Report</h2>
+        <p style="margin:5px 0; font-size:1.1rem; font-weight:bold; color:#475569;">মাস: ${filterMonthStr}</p>
+    </div>
+    <table>
+        <tr style="background: #e6fcf5;">
+            <th>ছাত্র/ছাত্রীর নাম</th>
+            <th>ক্লাস</th>
+            <th>উপস্থিতি</th>
+            <th>পেমেন্ট তারিখ</th>
+            <th>স্ট্যাটাস ট্যাগ</th>
+            <th style="text-align:right;">টাকা (৳)</th>
+        </tr>`;
+
+    students.forEach(s => {
+        let mData = getMonthData(s, filterMonthStr);
+        let amount = mData.feePaid ? (parseInt(mData.feeAmount) || 0) : 0;
+        totalIncome += amount;
+        let statusBadge = getPaymentStatusBadge(mData.feePaid, mData.feeDate);
+        
+        // উপস্থিতির দিন গোনা
+        let attCount = mData.attendedDates ? mData.attendedDates.length : 0;
+
+        html += `<tr>
+            <td><strong>${s.name}</strong></td>
+            <td>${s.class}</td>
+            <td>${toBanglaNumber(attCount)} দিন</td>
+            <td>${mData.feeDate || '-'}</td>
+            <td>${statusBadge}</td>
+            <td style="text-align:right; font-size:1.05rem;"><strong>৳ ${amount.toLocaleString('en-IN')}</strong></td>
+        </tr>`;
+    });
+
+    html += `<tr style="background: #dcfce7; font-size: 1.15rem;">
+        <td colspan="5" style="text-align: right;"><strong>মোট মাসিক আয় (Total Income):</strong></td>
+        <td style="text-align:right;"><strong style="color: #166534;">৳ ${totalIncome.toLocaleString('en-IN')}</strong></td>
+    </tr></table>`;
+    
     container.innerHTML = html;
 }
