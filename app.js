@@ -231,8 +231,7 @@ function renderAll() {
     renderStudentsGrid();
     renderPublicAttendanceTable();
     renderAdminAttendanceTable();
-    renderPublicFeesTable();
-    renderAdminFeesTable();
+    renderAdminFeesTable(); // ফিস এখন শুধুমাত্র অ্যাডমিনে রেন্ডার হবে
     renderAdminStudentList();
     renderQuestionHub();
     generateIncomeReport();
@@ -400,33 +399,6 @@ function toggleHW(index) {
     saveData();
 }
 
-function renderPublicFeesTable() {
-    const container = document.getElementById('publicFeesContainer');
-    if(!container) return;
-    let html = `<table><tr>
-        <th>নাম</th>
-        <th>স্ট্যাটাস ট্যাগ</th>
-        <th style="text-align:right;">টাকার পরিমাণ (৳)</th>
-        <th style="text-align:right;">পরীক্ষার নম্বর</th>
-    </tr>`;
-
-    students.forEach((s) => {
-        let mData = getMonthData(s, currentMonth);
-        let statusBadge = getPaymentStatusBadge(mData.feePaid, mData.feeDate);
-        let amountStr = mData.feePaid ? `৳ ${toBanglaNumber(mData.feeAmount)}` : `<span style="color:#dc2626; font-weight:bold;">বকেয়া</span>`;
-        let marksStr = mData.examMarks ? `${toBanglaNumber(mData.examMarks)}` : "-";
-
-        html += `<tr>
-            <td><strong>${s.name}</strong></td>
-            <td>${statusBadge}</td>
-            <td style="text-align:right; font-size:1.05rem;"><strong>${amountStr}</strong></td>
-            <td style="text-align:right; font-size:1.05rem;"><strong>${marksStr}</strong></td>
-        </tr>`;
-    });
-    html += `</table>`;
-    container.innerHTML = html;
-}
-
 function renderAdminFeesTable() {
     const container = document.getElementById('adminFeesContainer');
     if(!container) return;
@@ -549,7 +521,6 @@ function renderAdminStudentList() {
     container.innerHTML = `<table>` + students.map((s, idx) => `<tr><td><strong>${s.name}</strong></td><td>${s.class}</td><td><button onclick="editStudent(${idx})" class="btn btn-warning" style="padding:4px 8px; font-size:0.8rem;">এডিট</button> <button onclick="deleteStudent(${idx})" class="btn btn-danger" style="padding:4px 8px; font-size:0.8rem;">ডিলিট</button></td></tr>`).join('') + `</table>`;
 }
 
-// 🖨️ প্রিন্ট ও রিপোর্ট তৈরির আপডেট ফাংশন
 function generateIncomeReport() {
     const container = document.getElementById('incomeReportContainer'); if (!container) return;
     const m = document.getElementById('reportMonthSelect')?.value; 
@@ -559,7 +530,6 @@ function generateIncomeReport() {
     const filterMonthStr = `${m} ${toBanglaNumber(y)}`; 
     let totalIncome = 0;
 
-    // রিপোর্টের টাইটেল (যা শুধু প্রিন্টে সুন্দর দেখাবে)
     let html = `
     <div style="text-align: center; margin-bottom: 20px;">
         <h2 style="margin:0; color:#3730a3;">জ্ঞানকুঠির - Tuition Report</h2>
@@ -580,8 +550,6 @@ function generateIncomeReport() {
         let amount = mData.feePaid ? (parseInt(mData.feeAmount) || 0) : 0;
         totalIncome += amount;
         let statusBadge = getPaymentStatusBadge(mData.feePaid, mData.feeDate);
-        
-        // উপস্থিতির দিন গোনা
         let attCount = mData.attendedDates ? mData.attendedDates.length : 0;
 
         html += `<tr>

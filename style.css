@@ -120,23 +120,9 @@ th { background: #f1f5f9; font-weight: 700; color: #334155; }
 .nav-item { background: none; border: none; font-size: 0.85rem; color: #64748b; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 600; }
 .nav-item.active { color: var(--primary); font-weight: 800; }
 
-/* 🖨️ কাস্টম প্রিন্ট ডিজাইন (শুধুমাত্র রিপোর্ট প্রিন্ট হবে) */
 @media print {
-    body * { visibility: hidden; } /* বাকি সব লুকিয়ে ফেলবে */
-    
-    #incomeReportContainer, #incomeReportContainer * { 
-        visibility: visible; 
-    }
-    
-    #incomeReportContainer { 
-        position: absolute; 
-        left: 0; 
-        top: 0; 
-        width: 100%; 
-    }
-
-    * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
+    body * { visibility: hidden; } 
+    #incomeReportContainer, #incomeReportContainer * { visibility: visible; }
+    #incomeReportContainer { position: absolute; left: 0; top: 0; width: 100%; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
