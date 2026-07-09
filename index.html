@@ -6,6 +6,10 @@
     <title>Tuition Manager PWA</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    
+    <!-- অ্যাপের লোগো সেটআপ -->
+    <link rel="icon" href="logo-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="logo-192.png">
 </head>
 <body>
 
@@ -41,7 +45,6 @@
                     <span>নির্বাচিত মাস:</span>
                     <strong id="displayCurrentMonth">জুলাই ২০২৬</strong>
                 </div>
-                <!-- অটো-সাম শুধুমাত্র অ্যাডমিনে দেখালে ভালো, তবে তুমি চাইলে হোমেও রাখতে পারো -->
                 <div class="summary-item total-fee">
                     <span>এই মাসে মোট ফিস আদায়:</span>
                     <strong>৳ <span id="totalFeeCollected">0</span></strong>
@@ -100,7 +103,6 @@
                 <div class="admin-badge rgb-border">🔓 অ্যাডমিন আনলকড (সম্পূর্ণ কন্ট্রোল দৃশ্যমান)</div>
                 <button onclick="lockAdmin()" class="btn btn-danger" style="margin-bottom: 20px;">লগআউট (লক করুন)</button>
 
-                <!-- মাস ও সাল নির্বাচন -->
                 <div class="card rgb-card section-large">
                     <h3 class="rgb-text">📅 ড্যাশবোর্ডের মাস ও সাল নির্বাচন</h3>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
@@ -109,13 +111,11 @@
                     </div>
                 </div>
 
-                <!-- ১. স্মার্ট হাজিরা ও হোমওয়ার্ক এন্ট্রি বক্স -->
                 <div class="card rgb-card section-large" style="border: 2px solid #16a34a;">
                     <h3 class="rgb-text">📝 দৈনিক হাজিরা ও হোমওয়ার্ক ব্যাকলগ এন্ট্রি</h3>
                     <div id="adminAttendanceContainer" class="table-responsive" style="margin-top: 10px;"></div>
                 </div>
 
-                <!-- ২. ফিস, রিসিট ও নম্বর এন্ট্রি (অটো-সাম সহ) - সম্পূর্ণ সিকিউরড -->
                 <div class="card rgb-card section-large" style="border: 2px solid #eab308;">
                     <h3 class="rgb-text">💰 ফিস, রিসিট ও নম্বর এন্ট্রি ড্যাশবোর্ড</h3>
                     <p style="font-size: 1.15rem; color: #166534; margin-top: 10px; margin-bottom: 12px; font-weight: bold; background: #dcfce7; padding: 10px 15px; border-radius: 8px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -124,7 +124,6 @@
                     <div id="adminFeesContainer" class="table-responsive"></div>
                 </div>
 
-                <!-- ৩. কোশ্চেন পেপার আপলোড -->
                 <div class="card rgb-card section-large" style="border: 2px solid #4f46e5;">
                     <h3 class="rgb-text">📚 কোশ্চেন পেপার ও স্টাডি হাব আপলোড (PDF: 20-60 KB)</h3>
                     <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top:12px;">
@@ -135,13 +134,11 @@
                     <div id="adminQuestionList" class="table-responsive" style="margin-top: 15px;"></div>
                 </div>
 
-                <!-- ৪. ছাত্র/ছাত্রী এডিট বা ডিলিট -->
                 <div class="card rgb-card section-large">
                     <h3 class="rgb-text">✏️ ছাত্র/ছাত্রীদের প্রোফাইল পরিচালনা (এডিট/ডিলিট)</h3>
                     <div id="adminStudentListContainer" class="table-responsive" style="margin-top: 10px;"></div>
                 </div>
 
-                <!-- ৫. নতুন ছাত্র যোগ -->
                 <div class="card rgb-card section-large">
                     <h3>➕ নতুন ছাত্র/ছাত্রী যোগ করুন</h3>
                     <div class="add-student-grid" style="margin-top:12px;">
@@ -153,7 +150,6 @@
                     <button onclick="addStudent()" class="btn btn-success rgb-btn" style="margin-top: 15px; padding:12px 24px; font-size:1.05rem;">যোগ করুন</button>
                 </div>
 
-                <!-- ৬. সেটিংস -->
                 <div class="admin-settings card rgb-card section-large">
                     <h3>ইনস্টিটিউট ও শিক্ষকের নাম পরিবর্তন</h3>
                     <input type="text" id="editInstName" placeholder="ইনস্টিটিউটের নাম" style="padding:12px; font-size:1rem;">
@@ -161,7 +157,6 @@
                     <button onclick="updateBranding()" class="btn btn-primary rgb-btn" style="margin-top:10px; padding:10px 20px;">সেভ করুন</button>
                 </div>
 
-                <!-- ৭. ইনকাম রিপোর্ট প্রিন্ট -->
                 <div class="card rgb-card section-large">
                     <h3 class="rgb-text">💰 মাসিক ইনকাম ও রিসিট ফিল্টার রিপোর্ট</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; margin-top:10px;">
@@ -176,7 +171,7 @@
 
     </main>
 
-    <!-- নিচের নেভিগেশন বার (শুধুমাত্র ৪টি ট্যাব) -->
+    <!-- নিচের নেভিগেশন বার -->
     <nav class="bottom-nav rgb-border-top">
         <button onclick="switchTab('slide-home')" class="nav-item active" id="nav-home">🏠 হোম</button>
         <button onclick="switchTab('slide-students')" class="nav-item" id="nav-students">👥 ছাত্র তালিকা</button>

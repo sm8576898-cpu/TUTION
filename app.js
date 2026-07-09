@@ -231,7 +231,7 @@ function renderAll() {
     renderStudentsGrid();
     renderPublicAttendanceTable();
     renderAdminAttendanceTable();
-    renderAdminFeesTable(); // ফিস এখন শুধুমাত্র অ্যাডমিনে রেন্ডার হবে
+    renderAdminFeesTable();
     renderAdminStudentList();
     renderQuestionHub();
     generateIncomeReport();
